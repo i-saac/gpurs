@@ -1,0 +1,11 @@
+[package]
+name = "gpurs"
+version = "0.0.1"
+edition = "2021"
+description = "GPU acceleration/linear algebra crate for scientific computing"
+license = "Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+opencl3 = "0.9.3"

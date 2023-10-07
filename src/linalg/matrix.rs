@@ -1,0 +1,284 @@
+use std::ops;
+
+use crate::Result;
+use crate::Jeeperr;
+
+#[derive(Debug, Clone)]
+pub struct Matrix {
+    data: Vec<f32>,
+    rows: usize,
+    cols: usize
+}
+
+impl Matrix {
+    pub fn new(data: Vec<f32>, rows: usize, cols: usize) -> Result<Matrix> {
+        let vec_len: usize = data.len();
+        let comp_len: usize = rows * cols;
+
+        if vec_len == comp_len {
+            let output: Matrix = Matrix { data, rows, cols };
+
+            return Ok(output)
+        }
+        else {
+            return Err(Jeeperr::DimensionError)
+        }
+    }
+
+    pub fn zeros(rows: usize, cols: usize) -> Matrix {
+        let data: Vec<f32> = vec![0.0; rows * cols];
+
+        return Matrix { data, rows, cols }
+    }
+
+    pub fn ones(rows: usize, cols: usize) -> Matrix {
+        let data: Vec<f32> = vec![1.0; rows * cols];
+
+        return Matrix { data, rows, cols }
+    }
+
+    pub fn get_rows(&self) -> usize {
+        return self.rows
+    }
+
+    pub fn get_cols(&self) -> usize {
+        return self.cols
+    }
+
+    pub fn get_data(&self) -> &[f32] {
+        return &self.data
+    }
+
+    pub fn row_matrix(&self, row_idx: usize) -> Result<Matrix> {
+        if row_idx >= self.rows {
+            return Err(Jeeperr::IndexError)
+        }
+
+        let lower_data_idx: usize = row_idx * self.cols;
+        let upper_data_idx: usize = (row_idx + 1) * self.cols;
+
+        let output_row_data: Vec<f32> = self.data[lower_data_idx..upper_data_idx].to_vec();
+
+        return Ok(Matrix { data: output_row_data, rows: 1, cols: self.cols })
+    }
+
+    pub fn row_vec(&self, row_idx: usize) -> Result<Vec<f32>> {
+        if row_idx >= self.rows {
+            return Err(Jeeperr::IndexError)
+        }
+
+        let lower_data_idx: usize = row_idx * self.cols;
+        let upper_data_idx: usize = (row_idx + 1) * self.cols;
+
+        let output_row: Vec<f32> = self.data[lower_data_idx..upper_data_idx].to_vec();
+
+        return Ok(output_row)
+    }
+
+    pub fn col_matrix(&self, col_idx: usize) -> Result<Matrix> {
+        if col_idx >= self.cols {
+            return Err(Jeeperr::IndexError)
+        }
+
+        let lower_data_idx: usize = col_idx;
+        let upper_data_idx: usize = (self.rows - 1) * self.cols + col_idx;
+
+        let output_col_data: Vec<f32> = (lower_data_idx..=upper_data_idx).step_by(self.cols)
+            .map(|idx| self.data[idx])
+            .collect::<Vec<f32>>();
+
+        return Ok(Matrix { data: output_col_data, rows: self.rows, cols: 1 })
+    }
+
+    pub fn col_vec(&self, col_idx: usize) -> Result<Vec<f32>> {
+        if col_idx >= self.cols {
+            return Err(Jeeperr::IndexError)
+        }
+
+        let lower_data_idx: usize = col_idx;
+        let upper_data_idx: usize = self.rows * self.cols;
+
+        let output_col: Vec<f32> = (lower_data_idx..=upper_data_idx).step_by(self.cols)
+            .map(|idx| self.data[idx])
+            .collect::<Vec<f32>>();
+
+        return Ok(output_col)
+    }
+
+    pub fn transpose(self) -> Matrix {
+        let mut transpose_data: Vec<f32> = Vec::with_capacity(self.rows * self.cols);
+
+        for transpose_row in 0..self.cols {
+            for transpose_col in 0..self.rows {
+                transpose_data.push(self[[transpose_col, transpose_row]]);
+            }
+        }
+
+        Matrix { data: transpose_data, rows: self.cols, cols: self.rows }
+    }
+
+    pub fn ewmult(self, rhs: Matrix) -> Result<Matrix> {
+        if self.rows != rhs.rows || self.cols != rhs.cols {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let n_elements: usize = self.rows * self.cols;
+        let mut ewmult_data: Vec<f32> = Vec::with_capacity(n_elements);
+
+        for element in 0..n_elements {
+            ewmult_data.push(self.data[element] * rhs.data[element]);
+        }
+
+        Ok(Matrix { data: ewmult_data, rows: self.rows, cols: self.cols })
+    }
+}
+
+impl ops::Index<[usize; 2]> for Matrix {
+    type Output = f32;
+
+    fn index(&self, idx: [usize; 2]) -> &f32 {
+        return &self.data[idx[0] * self.cols + idx[1]]
+    }
+}
+
+impl ops::Add<f32> for Matrix {
+    type Output = Matrix;
+
+    fn add(self, rhs: f32) -> Matrix {
+        let output_data: Vec<f32> = self.data.iter()
+            .map(|val| val + rhs)
+            .collect::<Vec<f32>>();
+
+        Matrix { data: output_data, rows: self.rows, cols: self.cols }
+    }
+}
+
+impl ops::Add<Matrix> for Matrix {
+    type Output = Result<Matrix>;
+
+    fn add(self, rhs: Matrix) -> Result<Matrix> {
+        if (self.rows != rhs.rows) || (self.cols != rhs.cols) {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let n_elements: usize = self.rows * self.cols;
+        let output_data: Vec<f32> = (0..n_elements).into_iter()
+            .map(|idx| self.data[idx] + rhs.data[idx])
+            .collect::<Vec<f32>>();
+
+        Ok(Matrix { data: output_data, rows: self.rows, cols: self.cols })
+    }
+}
+
+impl ops::Add<Matrix> for f32 {
+    type Output = Matrix;
+
+    fn add(self, rhs: Matrix) -> Matrix {
+        let output_data: Vec<f32> = rhs.data.iter()
+            .map(|val| self + val)
+            .collect::<Vec<f32>>();
+
+        Matrix { data: output_data, rows: rhs.rows, cols: rhs.cols }
+    }
+}
+
+impl ops::Neg for Matrix {
+    type Output = Matrix;
+
+    fn neg(self) -> Matrix {
+        let output_data: Vec<f32> = self.data.iter()
+            .map(|val| -val)
+            .collect::<Vec<f32>>();
+
+        Matrix { data: output_data, rows: self.rows, cols: self.cols }
+    }
+}
+
+impl ops::Sub<f32> for Matrix {
+    type Output = Matrix;
+
+    fn sub(self, rhs: f32) -> Matrix {
+        let output_data: Vec<f32> = self.data.iter()
+            .map(|val| val - rhs)
+            .collect::<Vec<f32>>();
+
+        Matrix { data: output_data, rows: self.rows, cols: self.cols }
+    }
+}
+
+impl ops::Sub<Matrix> for Matrix {
+    type Output = Result<Matrix>;
+
+    fn sub(self, rhs: Matrix) -> Result<Matrix> {
+        if (self.rows != rhs.rows) || (self.cols != rhs.cols) {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let n_elements: usize = self.rows * self.cols;
+        let output_data: Vec<f32> = (0..n_elements).into_iter()
+            .map(|idx| self.data[idx] - rhs.data[idx])
+            .collect::<Vec<f32>>();
+
+        Ok(Matrix { data: output_data, rows: self.rows, cols: self.cols })
+    }
+}
+
+impl ops::Sub<Matrix> for f32 {
+    type Output = Matrix;
+
+    fn sub(self, rhs: Matrix) -> Matrix {
+        let output_data: Vec<f32> = rhs.data.iter()
+            .map(|val| self - val)
+            .collect::<Vec<f32>>();
+
+        Matrix { data: output_data, rows: rhs.rows, cols: rhs.cols }
+    }
+}
+
+impl ops::Mul<f32> for Matrix {
+    type Output = Matrix;
+
+    fn mul(self, rhs: f32) -> Matrix {
+        let output_data: Vec<f32> = self.data.iter()
+            .map(|val| val * rhs)
+            .collect::<Vec<f32>>();
+
+        Matrix { data: output_data, rows: self.rows, cols: self.cols }
+    }
+}
+
+impl ops::Mul<Matrix> for f32 {
+    type Output = Matrix;
+
+    fn mul(self, rhs: Matrix) -> Matrix {
+        let output_data = rhs.data.iter()
+            .map(|val| self * val)
+            .collect::<Vec<f32>>();
+
+        Matrix { data: output_data, rows: rhs.rows, cols: rhs.cols }
+    }
+}
+
+impl ops::Mul<Matrix> for Matrix {
+    type Output = Result<Matrix>;
+
+    fn mul(self, rhs: Matrix) -> Result<Matrix> {
+        if self.cols != rhs.rows {
+            return Err(Jeeperr::DimensionError)
+        }
+        let new_n_elements: usize = self.rows * rhs.cols;
+        let mut output_data: Vec<f32> = Vec::with_capacity(new_n_elements);
+
+        for lhs_row in 0..self.rows {
+            for rhs_col in 0..rhs.cols {
+                let dot_prod: f32 = (0..self.cols).into_iter()
+                    .map(|idx| self[[lhs_row, idx]] * rhs[[idx, rhs_col]])
+                    .sum();
+
+                output_data.push(dot_prod);
+            }
+         }
+
+        Ok(Matrix { data: output_data, rows: self.rows, cols: rhs.cols })
+    }
+}
