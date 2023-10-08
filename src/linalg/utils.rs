@@ -1,6 +1,6 @@
-use crate::Matrix;
 use crate::Result;
 use crate::Jeeperr;
+use crate::linalg::Matrix;
 
 pub enum Axis {
     Row,

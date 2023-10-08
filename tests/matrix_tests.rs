@@ -1,4 +1,4 @@
-use gpurs::Matrix;
+use gpurs::linalg::Matrix;
 
 #[test]
 fn indexing_tests() {

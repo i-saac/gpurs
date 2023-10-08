@@ -38,7 +38,7 @@ pub struct MemoryHandler {
 use crate::Result;
 
 use crate::Jeeperr;
-use crate::Matrix;
+use crate::linalg::Matrix;
 
 impl MemoryHandler {
     pub fn new(program_source: &str, kernel_names: Vec<&str>) -> Result<MemoryHandler> {

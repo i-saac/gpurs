@@ -1,5 +1,5 @@
-use gpurs::Matrix;
-use gpurs::utils;
+use gpurs::linalg::Matrix;
+use gpurs::linalg::utils;
 
 #[test]
 fn dot_test() {

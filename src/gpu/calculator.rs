@@ -6,7 +6,7 @@
 
 use crate::Result;
 use crate::Jeeperr;
-use crate::Matrix;
+use crate::linalg::Matrix;
 use crate::gpu::memory::MemoryHandler;
 
 type ResultFunction = Box<dyn Fn(

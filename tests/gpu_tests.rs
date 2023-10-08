@@ -1,8 +1,10 @@
 use gpurs::Result;
 use gpurs::Jeeperr;
-use gpurs::Matrix;
-use gpurs::Calculator;
-use gpurs::gpu::ParameterFunction;
+use gpurs::linalg::Matrix;
+use gpurs::gpu::{
+    Calculator,
+    ParameterFunction
+};
 
 #[test]
 fn gpu_dot_test() {
