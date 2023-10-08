@@ -98,11 +98,24 @@ impl Matrix {
         let lower_data_idx: usize = col_idx;
         let upper_data_idx: usize = self.rows * self.cols;
 
-        let output_col: Vec<f32> = (lower_data_idx..=upper_data_idx).step_by(self.cols)
+        let output_col: Vec<f32> = (lower_data_idx..upper_data_idx).step_by(self.cols)
             .map(|idx| self.data[idx])
             .collect::<Vec<f32>>();
 
         return Ok(output_col)
+    }
+
+    pub fn slice_index(&self, row_idcs: &[usize], col_idcs: &[usize]) -> Matrix {
+        let output_rows: usize = row_idcs.len();
+        let output_cols: usize = col_idcs.len();
+        let mut output_data: Vec<f32> = Vec::with_capacity(output_rows * output_cols);
+        for row_idx in row_idcs {
+            for col_idx in col_idcs {
+                output_data.push(self.data[row_idx * self.cols + col_idx]);
+            }
+        }
+
+        return Matrix { data: output_data, rows: output_rows, cols: output_cols }
     }
 
     pub fn transpose(self) -> Matrix {
@@ -117,7 +130,7 @@ impl Matrix {
         Matrix { data: transpose_data, rows: self.cols, cols: self.rows }
     }
 
-    pub fn ewmult(self, rhs: Matrix) -> Result<Matrix> {
+    pub fn elementwise(self, rhs: Matrix) -> Result<Matrix> {
         if self.rows != rhs.rows || self.cols != rhs.cols {
             return Err(Jeeperr::DimensionError)
         }
@@ -280,5 +293,20 @@ impl ops::Mul<Matrix> for Matrix {
          }
 
         Ok(Matrix { data: output_data, rows: self.rows, cols: rhs.cols })
+    }
+}
+
+impl std::fmt::Display for Matrix {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        writeln!(f, "[{:?}", self.row_vec(0).unwrap())?;
+        for row_idx in 1..self.rows {
+            write!(f, " {:?}", self.row_vec(row_idx).unwrap())?;
+            if row_idx < self.rows - 1 {
+                write!(f, "\n")?;
+            }
+        }
+        writeln!(f, "]")?;
+
+        Ok(())
     }
 }

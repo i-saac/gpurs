@@ -2,6 +2,7 @@ mod calculator;
 mod memory;
 
 pub use calculator::Calculator;
+pub use calculator::ParameterFunction;
 
 /// Default amount of memory slots for matrices in MemoryHandler and Calculator
 const INIT_MEMORY_CAPACITY: usize = 3;
