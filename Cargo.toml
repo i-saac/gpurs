@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 description = "GPU acceleration/linear algebra crate for scientific computing"
 readme = "README.md"
+homepage = "https://github.com/i-saac/gpurs"
+repository = "https://github.com/i-saac/gpurs"
+documentation = "https://docs.rs/oscirs_linalg/latest/gpurs/"
 license = "Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
