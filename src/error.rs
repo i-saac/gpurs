@@ -3,6 +3,7 @@ use std::error::Error;
 
 use opencl3::error_codes::ClError;
 
+/// Error enum for gpurs crate
 #[derive(Debug)]
 pub enum Jeeperr {
     ArgumentError,

@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use gpurs::Result;
 use gpurs::Jeeperr;
 use gpurs::linalg::Matrix;
@@ -135,4 +137,33 @@ fn custom_kernel_test() {
     assert_eq!(c_mat.get_data(), c_vec, "Matrix C data not as expected");
     assert_eq!(c_mat.get_rows(), 2, "Matrix C row dimension not as expected");
     assert_eq!(c_mat.get_cols(), 3, "Matrix C row dimension not as expected");
+}
+
+#[test]
+fn cpu_vs_gpu_test() {
+    let a_mat: Matrix = Matrix::ones(1000, 1000);
+    let b_mat: Matrix = Matrix::ones(1000, 1000);
+    let c_mat: Matrix = Matrix::ones(1000, 1000);
+
+    let gpu_total_start = Instant::now();
+    let output_gpu: Matrix;
+    {
+        let mut calc: Calculator = Calculator::init()
+            .expect("Failed to initialize calculator");
+
+        let a_idx: usize = calc.store_matrix(a_mat)
+            .expect("Failed to store Matrix A");
+
+        let gpu_calc_start = Instant::now();
+        (output_gpu, _) = calc.mat_mul(a_idx, a_idx)
+            .expect("Failed to multiply Matrix A by Matrix A (GPU)");
+        println!("GPU Calc: {:?}", gpu_calc_start.elapsed());
+    }
+    println!("GPU Total: {:?}", gpu_total_start.elapsed());
+
+    let cpu_start = Instant::now();
+    let output_cpu = (b_mat * c_mat).expect("failed to multiply Matrix A by Matrix A (CPU)");
+    println!("CPU: {:?}", cpu_start.elapsed());
+
+    assert_eq!(output_gpu.get_data(), output_cpu.get_data())
 }

@@ -21,6 +21,7 @@ type ResultFunction = Box<dyn Fn(
 ) -> Result<(Matrix, usize)>>;
 
 /// Shortcut type definition for closure defining output parameters for custom kernel
+/// Inputs is a list of matrices, the output is a Result containing a tuple of the output rows, output cols, and work sizes
 pub type ParameterFunction = Box<dyn Fn(Vec<&Matrix>) -> Result<(usize, usize, Vec<usize>)>>;
 
 /// Wrapper that manages storage of matrices and custom kernels and manages calculation operations

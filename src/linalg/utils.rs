@@ -2,11 +2,13 @@ use crate::Result;
 use crate::Jeeperr;
 use crate::linalg::Matrix;
 
+/// Axis enum for use in utility functions
 pub enum Axis {
     Row,
     Col
 }
 
+/// Dot product between two float vectors
 pub fn dot(a: Vec<f32>, b: Vec<f32>) -> Result<f32> {
     if a.len() != b.len() {
         return Err(Jeeperr::DimensionError)
@@ -18,6 +20,7 @@ pub fn dot(a: Vec<f32>, b: Vec<f32>) -> Result<f32> {
     return Ok(dot_prod)
 }
 
+/// Max value of a matrix
 pub fn max(matrix: &Matrix) -> f32 {
     let max_val: f32 = matrix.get_data()
         .iter()
@@ -26,6 +29,7 @@ pub fn max(matrix: &Matrix) -> f32 {
     return max_val
 }
 
+/// Max values of a matrix along an axis
 pub fn axis_max(matrix: &Matrix, axis: Axis) -> Matrix {
     match axis {
         Axis::Row => {
@@ -61,6 +65,7 @@ pub fn axis_max(matrix: &Matrix, axis: Axis) -> Matrix {
     }
 }
 
+/// Min value of a matrix
 pub fn min(matrix: &Matrix) -> f32 {
     let min_val: f32 = matrix.get_data()
         .iter()
@@ -69,6 +74,7 @@ pub fn min(matrix: &Matrix) -> f32 {
     return min_val
 }
 
+/// Min values of a matrix along an axis
 pub fn axis_min(matrix: &Matrix, axis: Axis) -> Matrix {
     match axis {
         Axis::Row => {
@@ -104,6 +110,7 @@ pub fn axis_min(matrix: &Matrix, axis: Axis) -> Matrix {
     }
 }
 
+/// Concatenate a slice of matrices together
 pub fn concatenate(matrices: &[Matrix], axis: Axis) -> Result<Matrix> {
     match axis {
         Axis::Row => {
