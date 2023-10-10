@@ -20,6 +20,64 @@ pub fn dot(a: Vec<f32>, b: Vec<f32>) -> Result<f32> {
     return Ok(dot_prod)
 }
 
+pub fn lu_decomp(matrix: &Matrix) -> Result<Matrix> {
+    if matrix.get_rows() != matrix.get_cols() {
+        return Err(Jeeperr::DimensionError)
+    }
+    let dim_n: usize = matrix.get_rows();
+
+    let mut lu_data: Vec<f32> = vec![0.0; dim_n * dim_n];
+    for idx in 0..dim_n {
+        for jdx in idx..dim_n {
+            let sum: f32 = (0..idx)
+                .into_iter()
+                .map(|kdx| lu_data[idx * dim_n + kdx] * lu_data[kdx * dim_n + jdx])
+                .sum();
+            lu_data[idx * dim_n + jdx] = matrix[[idx, jdx]] - sum;
+        }
+        for jdx in (idx + 1)..dim_n {
+            let sum: f32 = (0..idx)
+                .into_iter()
+                .map(|kdx| lu_data[jdx * dim_n + kdx] * lu_data[kdx * dim_n + idx])
+                .sum();
+            lu_data[jdx * dim_n + idx] = (matrix[[jdx, idx]] - sum) / lu_data[idx * dim_n + idx];
+        }
+    }
+
+    return Ok(Matrix::new(lu_data, dim_n, dim_n)?)
+}
+
+pub fn linear_solve_matrix(a_mat: &Matrix, b_vec: &Matrix) -> Result<Matrix> {
+    if a_mat.get_rows() != a_mat.get_cols() || a_mat.get_cols() != b_vec.get_rows() || b_vec.get_cols() != 1 {
+        return Err(Jeeperr::DimensionError)
+    }
+    let dim_n: usize = a_mat.get_rows();
+
+    let lu_matrix: Matrix = lu_decomp(a_mat)?;
+
+    let mut y_data: Vec<f32> = vec![0.0; dim_n];
+    for idx in 0..dim_n {
+        let sum: f32 = (0..idx)
+            .into_iter()
+            .map(|kdx| lu_matrix[[idx, kdx]] * y_data[kdx])
+            .sum();
+
+        y_data[idx] = b_vec.get_data()[idx] - sum;
+    }
+
+    let mut x_data: Vec<f32> = vec![0.0; dim_n];
+    for idx in (0..dim_n).rev() {
+        let sum: f32 = ((idx + 1)..dim_n)
+            .into_iter()
+            .map(|kdx| lu_matrix[[idx, kdx]] * x_data[kdx])
+            .sum();
+
+        x_data[idx] = (y_data[idx] - sum) / lu_matrix[[idx, idx]];
+    }
+
+    return Ok(Matrix::new(x_data, dim_n, 1)?);
+}
+
 /// Max value of a matrix
 pub fn max(matrix: &Matrix) -> f32 {
     let max_val: f32 = matrix.get_data()

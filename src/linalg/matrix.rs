@@ -43,6 +43,16 @@ impl Matrix {
         return Matrix { data, rows, cols }
     }
 
+    pub fn identity(dim_n: usize) -> Matrix {
+        let mut data: Vec<f32> = vec![0.0; dim_n * dim_n];
+        
+        for diagonal_idx in 0..dim_n {
+            data[diagonal_idx * dim_n + diagonal_idx] = 1.0;
+        }
+
+        return Matrix { data, rows: dim_n, cols: dim_n };
+    }
+
     /// Get number of rows in matrix
     pub fn get_rows(&self) -> usize {
         return self.rows

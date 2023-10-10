@@ -10,6 +10,19 @@ fn dot_test() {
 }
 
 #[test]
+fn linear_solve_test() {
+    let a_mat: Matrix = Matrix::new(vec![1.0, 1.0, 1.0, 3.0, 1.0, -3.0, 1.0, -2.0, -5.0], 3, 3)
+        .expect("Failed to create a square matrix");
+    let b_vec: Matrix = Matrix::new(vec![1.0, 5.0, 10.0], 3, 1)
+        .expect("Failed to create b column matrix");
+
+    let x_vec: Matrix = utils::linear_solve_matrix(&a_mat, &b_vec)
+        .expect("Failed to linearly solve a\"b");
+
+    println!("{}", x_vec);
+}
+
+#[test]
 fn max_min_test() {
     let a_data: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0];
     let a_mat: Matrix = Matrix::new(a_data, 2, 2)
