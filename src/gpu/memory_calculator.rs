@@ -22,20 +22,20 @@ type ResultFunction = Box<dyn Fn(
 
 /// Shortcut type definition for closure defining output parameters for custom kernel
 /// Inputs is a list of matrices, the output is a Result containing a tuple of the output rows, output cols, and work sizes
-pub type ParameterFunction = Box<dyn Fn(Vec<&Matrix>) -> Result<(usize, usize, Vec<usize>)>>;
+pub type MemoryParameterFunction = Box<dyn Fn(Vec<&Matrix>) -> Result<(usize, usize, Vec<usize>)>>;
 
 /// Wrapper that manages storage of matrices and custom kernels and manages calculation operations
-pub struct Calculator {
+pub struct MemoryCalculator {
     memory_handler: MemoryHandler, // Memory handler
     matrices: Vec<Matrix>, // Calculator memory vector
     customs: Vec<ResultFunction>,
-    params_customs: Vec<ParameterFunction>,
+    params_customs: Vec<MemoryParameterFunction>,
     custom_idcs: Vec<usize>
 }
 
-impl Calculator {
+impl MemoryCalculator {
     /// Initializes Calculator struct
-    pub fn init() -> Result<Calculator> {
+    pub fn init() -> Result<MemoryCalculator> {
         // Initialize vector of kernel names
         let program_vec: Vec<&str> = super::PROGRAM_LIST.to_vec();
         
@@ -46,11 +46,11 @@ impl Calculator {
         let mat_vector: Vec<Matrix> = Vec::with_capacity(super::INIT_MEMORY_CAPACITY);
 
         let customs_vector: Vec<ResultFunction> = Vec::default();
-        let params_customs_vector: Vec<ParameterFunction> = Vec::default();
+        let params_customs_vector: Vec<MemoryParameterFunction> = Vec::default();
         let custom_idcs_vector: Vec<usize> = Vec::default();
 
         // Create and return new memory calculator
-        let output: Calculator = Calculator {
+        let output: MemoryCalculator = MemoryCalculator {
             memory_handler: memory_handler,
             matrices: mat_vector,
             customs: customs_vector,
@@ -110,7 +110,7 @@ impl Calculator {
         &mut self,
         program_source: &str,
         kernel_name: &str,
-        parameter_fn: ParameterFunction
+        parameter_fn: MemoryParameterFunction
     ) -> Result<usize>
     {
         let new_kernel_index: usize = self.memory_handler.new_kernel(program_source, kernel_name)?;

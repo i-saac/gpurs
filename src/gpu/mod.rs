@@ -1,8 +1,11 @@
-mod calculator;
 mod memory;
+mod memory_calculator;
+mod quick_calculator;
 
-pub use calculator::Calculator;
-pub use calculator::ParameterFunction;
+pub use memory_calculator::MemoryCalculator;
+pub use memory_calculator::MemoryParameterFunction;
+pub use quick_calculator::QuickCalculator;
+pub use quick_calculator::QuickParameterFunction;
 
 /// Default amount of memory slots for matrices in MemoryHandler and Calculator
 const INIT_MEMORY_CAPACITY: usize = 3;

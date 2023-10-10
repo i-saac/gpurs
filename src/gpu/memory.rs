@@ -37,7 +37,6 @@ pub struct MemoryHandler {
 
 use crate::Result;
 
-use crate::Jeeperr;
 use crate::linalg::Matrix;
 
 impl MemoryHandler {
@@ -91,10 +90,6 @@ impl MemoryHandler {
 
     // Create buffer and store matrix in buffer
     pub fn store_matrix(&mut self, matrix: Matrix) -> Result<usize> {
-        if matrix.get_rows() * matrix.get_cols() != matrix.get_data().len() {
-            return Err(Jeeperr::DimensionError)
-        }
-
         // Create new empty write buffer
         let mut new_write_buffer: Buffer<f32> = unsafe {
             Buffer::<f32>::create(
@@ -179,7 +174,7 @@ impl MemoryHandler {
         // Collect selected write buffers into separate vector
         let selected_write_buffers: Vec<&Buffer<f32>> = input_mat_idcs
             .iter()
-            .map(|idx| &self.write_buffers[*idx])
+            .map(|&idx| &self.write_buffers[idx])
             .collect::<Vec<_>>();
 
         // Give ExecuteKernel the selected matrices
@@ -227,6 +222,144 @@ impl MemoryHandler {
         let output: Matrix = Matrix::new(output_data, output_rows, output_cols)?;
         let output_idx: usize = self.write_buffers.len() - 1;
         Ok((output, output_idx))
+    }
+
+    pub fn execute_once_and_read(
+        &mut self,
+        kernel_index: usize,
+        input_floats: Option<Vec<f32>>,
+        input_ints: Option<Vec<i32>>,
+        input_mat_idcs: Option<Vec<usize>>,
+        input_temp_mats: Option<Vec<&Matrix>>,
+        output_rows: usize,
+        output_cols: usize,
+        work_sizes: Vec<usize>
+    ) -> Result<Matrix>
+    {
+        // Create read buffer
+        let read_buffer: Buffer<f32> = unsafe {
+            Buffer::<f32>::create(
+                &self.context,
+                CL_MEM_READ_ONLY,
+                output_rows * output_cols,
+                ptr::null_mut()
+            )?
+        };
+
+        // Create ExecuteKernel object and empty events vector
+        let mut exec_kernel: ExecuteKernel = ExecuteKernel::new(&self.kernels[kernel_index]);
+        let mut events: Vec<cl_event> = Vec::default();
+
+        // Create output vector and initilize with zeros
+        let mut output_data: Vec<f32> = vec![0.0; output_rows * output_cols];
+
+        // Give ExecuteKernel the read buffer
+        let mut kernel_mid_exec: &mut ExecuteKernel = unsafe {
+            exec_kernel.set_arg(&read_buffer)
+        };
+
+        // Give ExecuteKernel the provided floats
+        if input_floats.is_some() {
+            for write_value in input_floats.unwrap() {
+                kernel_mid_exec = unsafe {
+                    kernel_mid_exec.set_arg(&write_value)
+                }
+            }
+        }
+
+        // Give ExecuteKernel the provided ints
+        if input_ints.is_some() {
+            for write_value in input_ints.unwrap() {
+                kernel_mid_exec = unsafe {
+                    kernel_mid_exec.set_arg(&write_value)
+                }
+            }
+        }
+
+        if input_mat_idcs.is_some() {
+            // Collect selected write buffers into separate vector
+            let selected_write_buffers: Vec<&Buffer<f32>> = input_mat_idcs
+                .unwrap()
+                .iter()
+                .map(|&idx| &self.write_buffers[idx])
+                .collect::<Vec<_>>();
+
+            // Give ExecuteKernel the selected matrices
+            for selected_buffer in selected_write_buffers {
+                kernel_mid_exec = unsafe {
+                    kernel_mid_exec.set_arg(selected_buffer)
+                };
+            }
+        }
+
+        let mut temp_write_buffers: Vec<Buffer<f32>> = Vec::default();
+        if input_temp_mats.is_some() {
+            // Loop through temp matrix entries
+            for temp_matrix in input_temp_mats.unwrap() {
+                // Create temporary write buffer
+                let mut temp_write_buffer: Buffer<f32> = unsafe {
+                    Buffer::<f32>::create(
+                        &self.context,
+                        CL_MEM_READ_ONLY,
+                        temp_matrix.get_rows() * temp_matrix.get_cols(),
+                        ptr::null_mut()
+                    )?
+                };
+
+                // Write matrix to buffer and store event
+                self.last_write_event = Some(unsafe {
+                    self.command_queue.enqueue_write_buffer(
+                        &mut temp_write_buffer,
+                        CL_NON_BLOCKING,
+                        0,
+                        &temp_matrix.get_data(),
+                        &[]
+                    )?
+                });
+
+                // Give ExecuteKernel the new buffer
+                kernel_mid_exec = unsafe {
+                    kernel_mid_exec.set_arg(&temp_write_buffer)
+                };
+                
+                temp_write_buffers.push(temp_write_buffer);
+            }               
+        }
+
+        // Unwrap Option from before to reference later
+        let last_write_event: &Event = self.last_write_event.as_ref().unwrap();
+
+        // Finalize kernel execution and store final event
+        let kernel_event: Event = unsafe {
+            kernel_mid_exec
+                .set_global_work_sizes(&work_sizes)
+                .set_wait_event(last_write_event)
+                .enqueue_nd_range(&self.command_queue)?
+        };
+
+        // Store raw kernel event in events vector
+        events.push(kernel_event.get());
+
+        // Read from buffer and store in output vector
+        let read_event: Event = unsafe {
+            self.command_queue.enqueue_read_buffer(
+                &read_buffer,
+                CL_NON_BLOCKING,
+                0,
+                &mut output_data,
+                &events
+            )?
+        };
+
+        // Wait for read event to finish
+        read_event.wait()?;
+
+        // Update most recent write event
+        self.last_write_event = Some(kernel_event);
+
+        // Create and return output matrix and memory index
+        let output: Matrix = Matrix::new(output_data, output_rows, output_cols)?;
+        Ok(output)
     }
 
     pub fn new_kernel(&mut self, program_source: &str, kernel_name: &str) -> Result<usize> {

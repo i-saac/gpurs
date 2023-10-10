@@ -4,13 +4,13 @@ use gpurs::Result;
 use gpurs::Jeeperr;
 use gpurs::linalg::Matrix;
 use gpurs::gpu::{
-    Calculator,
-    ParameterFunction
+    MemoryCalculator,
+    MemoryParameterFunction
 };
 
 #[test]
-fn gpu_dot_test() {
-    let mut calc: Calculator = Calculator::init()
+fn memory_gpu_matmul_test() {
+    let mut calc: MemoryCalculator = MemoryCalculator::init()
         .expect("Failed to initialize calculator");
 
     let a_vec: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
@@ -62,8 +62,8 @@ fn gpu_dot_test() {
 }
 
 #[test]
-fn custom_kernel_test() {
-    let mut calc: Calculator = Calculator::init()
+fn memory_custom_kernel_test() {
+    let mut calc: MemoryCalculator = MemoryCalculator::init()
         .expect("Failed to initialize calculator");
 
     let new_program: &str = r#"
@@ -82,7 +82,7 @@ fn custom_kernel_test() {
 
     let new_kernel_name: &str = "mat_ewmult";
 
-    let custom_param_function: ParameterFunction = Box::new(
+    let custom_param_function: MemoryParameterFunction = Box::new(
         | input_mats: Vec<&Matrix> | -> Result<(usize, usize, Vec<usize>)> {
             if input_mats.len() != 2 {
                 return Err(Jeeperr::ArgumentError)
@@ -140,7 +140,7 @@ fn custom_kernel_test() {
 }
 
 #[test]
-fn cpu_vs_gpu_test() {
+fn cpu_vs_memory_gpu_test() {
     let a_mat: Matrix = Matrix::ones(1000, 1000);
     let b_mat: Matrix = Matrix::ones(1000, 1000);
     let c_mat: Matrix = Matrix::ones(1000, 1000);
@@ -148,7 +148,7 @@ fn cpu_vs_gpu_test() {
     let gpu_total_start = Instant::now();
     let output_gpu: Matrix;
     {
-        let mut calc: Calculator = Calculator::init()
+        let mut calc: MemoryCalculator = MemoryCalculator::init()
             .expect("Failed to initialize calculator");
 
         let a_idx: usize = calc.store_matrix(a_mat)
