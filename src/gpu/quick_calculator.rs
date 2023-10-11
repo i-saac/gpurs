@@ -106,6 +106,31 @@ impl QuickCalculator {
         Ok(output)
     }
 
+    pub fn halfquick_mat_mul(&mut self, left_idx: usize, right: &Matrix) -> Result<Matrix> {
+        let left: &Matrix = &self.matrices[left_idx];
+
+        if left.get_cols() != right.get_rows() {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let rows: usize = left.get_rows();
+        let interm: usize = left.get_cols();
+        let cols: usize = right.get_cols();
+
+        let output: Matrix = self.memory_handler.execute_once_and_read(
+            0,
+            None,
+            Some(vec![cols as i32, interm as i32]),
+            Some(vec![left_idx]),
+            Some(vec![right]),
+            rows,
+            cols,
+            vec![rows, cols]
+        )?;
+
+        Ok(output)
+    }
+
     /// Multiply non-stored Matrix and non-stored Matrix
     pub fn quick_mat_mul(&mut self, left: &Matrix, right: &Matrix) -> Result<Matrix> {
         if left.get_cols() != right.get_rows() {
