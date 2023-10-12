@@ -12,21 +12,21 @@ use gpurs::gpu::{
 
 #[test]
 fn memory_gpu_matmul_test() {
-    let mut calc: MemoryCalculator<f32> = MemoryCalculator::<f32>::init()
+    let mut calc: MemoryCalculator<f64> = MemoryCalculator::<f64>::init()
         .expect("Failed to initialize calculator");
 
-    let a_vec: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
-    let b_vec: Vec<f32> = vec![2.0, 1.0, 2.0, 3.0, 2.0, 1.0];
+    let a_vec: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+    let b_vec: Vec<f64> = vec![2.0, 1.0, 2.0, 3.0, 2.0, 1.0];
 
-    let c_vec: Vec<f32> = vec![12.0, 10.0, 30.0, 25.0];
-    let d_vec: Vec<f32> = vec![52.0, 74.0, 96.0, 130.0, 185.0, 240.0];
+    let c_vec: Vec<f64> = vec![12.0, 10.0, 30.0, 25.0];
+    let d_vec: Vec<f64> = vec![52.0, 74.0, 96.0, 130.0, 185.0, 240.0];
 
-    let e_vec: Vec<f32> = vec![6.0, 9.0, 12.0, 14.0, 19.0, 24.0, 6.0, 9.0, 12.0];
-    let f_vec: Vec<f32> = vec![54.0, 45.0, 114.0, 95.0, 54.0, 45.0];
+    let e_vec: Vec<f64> = vec![6.0, 9.0, 12.0, 14.0, 19.0, 24.0, 6.0, 9.0, 12.0];
+    let f_vec: Vec<f64> = vec![54.0, 45.0, 114.0, 95.0, 54.0, 45.0];
 
-    let a_mat: Matrix<f32> = Matrix::new(a_vec, 2, 3)
+    let a_mat: Matrix<f64> = Matrix::new(a_vec, 2, 3)
         .expect("Failed to create Matrix A");
-    let b_mat: Matrix<f32> = Matrix::new(b_vec, 3, 2)
+    let b_mat: Matrix<f64> = Matrix::new(b_vec, 3, 2)
         .expect("Failed to create Matrix B");
 
     let a_idx: usize = calc.store_matrix(a_mat)
@@ -65,15 +65,15 @@ fn memory_gpu_matmul_test() {
 
 #[test]
 fn memory_custom_kernel_test() {
-    let mut calc: MemoryCalculator<f32> = MemoryCalculator::<f32>::init()
+    let mut calc: MemoryCalculator<f64> = MemoryCalculator::<f64>::init()
         .expect("Failed to initialize calculator");
 
     let new_program: &str = r#"
     kernel void mat_ewmult (
-        global float *c,
+        global double *c,
         const int N,
-        const global float* a,
-        const global float* b
+        const global double* a,
+        const global double* b
     ) {
         const int globalRow = get_global_id(0);
         const int globalCol = get_global_id(1);
@@ -84,14 +84,14 @@ fn memory_custom_kernel_test() {
 
     let new_kernel_name: &str = "mat_ewmult";
 
-    let custom_param_function: MemoryParameterFunction<f32> = Box::new(
-        | input_mats: Vec<&Matrix<f32>> | -> Result<(usize, usize, Vec<usize>)> {
+    let custom_param_function: MemoryParameterFunction<f64> = Box::new(
+        | input_mats: Vec<&Matrix<f64>> | -> Result<(usize, usize, Vec<usize>)> {
             if input_mats.len() != 2 {
                 return Err(Jeeperr::ArgumentError)
             }
 
-            let left: &Matrix<f32> = input_mats[0];
-            let right: &Matrix<f32> = input_mats[1];
+            let left: &Matrix<f64> = input_mats[0];
+            let right: &Matrix<f64> = input_mats[1];
 
             if (left.get_rows() != right.get_rows())
                 || (left.get_cols() != right.get_cols())
@@ -112,14 +112,14 @@ fn memory_custom_kernel_test() {
             .expect("Failed to load custom function")
     };
 
-    let a_vec: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
-    let b_vec: Vec<f32> = vec![2.0, 1.0, 2.0, 3.0, 2.0, 1.0];
+    let a_vec: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+    let b_vec: Vec<f64> = vec![2.0, 1.0, 2.0, 3.0, 2.0, 1.0];
     
-    let c_vec: Vec<f32> = vec![2.0, 2.0, 6.0, 12.0, 10.0, 6.0];
+    let c_vec: Vec<f64> = vec![2.0, 2.0, 6.0, 12.0, 10.0, 6.0];
 
-    let a_mat: Matrix<f32> = Matrix::new(a_vec, 2, 3)
+    let a_mat: Matrix<f64> = Matrix::new(a_vec, 2, 3)
         .expect("Failed to create Matrix A");
-    let b_mat: Matrix<f32> = Matrix::new(b_vec, 2, 3)
+    let b_mat: Matrix<f64> = Matrix::new(b_vec, 2, 3)
         .expect("Failed to create Matrix B");
 
     let a_idx: usize = calc.store_matrix(a_mat)
@@ -143,14 +143,14 @@ fn memory_custom_kernel_test() {
 
 #[test]
 fn cpu_vs_memory_gpu_test() {
-    let a_mat: Matrix<f32> = Matrix::<f32>::ones(1000, 1000);
-    let b_mat: Matrix<f32> = Matrix::<f32>::ones(1000, 1000);
-    let c_mat: Matrix<f32> = Matrix::<f32>::ones(1000, 1000);
+    let a_mat: Matrix<f64> = Matrix::<f64>::ones(1000, 1000);
+    let b_mat: Matrix<f64> = Matrix::<f64>::ones(1000, 1000);
+    let c_mat: Matrix<f64> = Matrix::<f64>::ones(1000, 1000);
 
     let gpu_total_start = Instant::now();
-    let output_gpu: Matrix<f32>;
+    let output_gpu: Matrix<f64>;
     {
-        let mut calc: MemoryCalculator<f32> = MemoryCalculator::<f32>::init()
+        let mut calc: MemoryCalculator<f64> = MemoryCalculator::<f64>::init()
             .expect("Failed to initialize calculator");
 
         let a_idx: usize = calc.store_matrix(a_mat)

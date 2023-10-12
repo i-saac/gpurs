@@ -10,21 +10,21 @@ use gpurs::gpu::{
 
 #[test]
 fn memory_gpu_matmul_test() {
-    let mut calc: QuickCalculator<f32> = QuickCalculator::<f32>::init()
+    let mut calc: QuickCalculator<f64> = QuickCalculator::<f64>::init()
         .expect("Failed to initialize calculator");
 
-    let a_vec: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
-    let b_vec: Vec<f32> = vec![2.0, 1.0, 2.0, 3.0, 2.0, 1.0];
+    let a_vec: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+    let b_vec: Vec<f64> = vec![2.0, 1.0, 2.0, 3.0, 2.0, 1.0];
 
-    let c_vec: Vec<f32> = vec![12.0, 10.0, 30.0, 25.0];
-    let d_vec: Vec<f32> = vec![54.0, 45.0, 114.0, 95.0, 54.0, 45.0];
+    let c_vec: Vec<f64> = vec![12.0, 10.0, 30.0, 25.0];
+    let d_vec: Vec<f64> = vec![54.0, 45.0, 114.0, 95.0, 54.0, 45.0];
 
-    let a_mat: Matrix<f32> = Matrix::new(a_vec, 2, 3)
+    let a_mat: Matrix<f64> = Matrix::new(a_vec, 2, 3)
         .expect("Failed to create Matrix A");
-    let b_mat: Matrix<f32> = Matrix::new(b_vec, 3, 2)
+    let b_mat: Matrix<f64> = Matrix::new(b_vec, 3, 2)
         .expect("Failed to create Matrix B");
 
-    let c_mat: Matrix<f32> = calc.quick_mat_mul(&a_mat, &b_mat)
+    let c_mat: Matrix<f64> = calc.quick_mat_mul(&a_mat, &b_mat)
         .expect("Failed to mulitply Matrix A and Matrix B");
 
     assert_eq!(c_mat.get_data(), c_vec, "Matrix C data not as expected");
@@ -34,7 +34,7 @@ fn memory_gpu_matmul_test() {
     let b_idx: usize = calc.store_matrix(b_mat)
         .expect("Failed to store Matrix B in calculator memory");
 
-    let d_mat: Matrix<f32> = calc.halfquick_mat_mul(b_idx, &c_mat)
+    let d_mat: Matrix<f64> = calc.halfquick_mat_mul(b_idx, &c_mat)
         .expect("Failed to multiply Matrix B and Matrix C");
 
     assert_eq!(d_mat.get_data(), d_vec, "Matrix D data not as expected");
@@ -44,20 +44,20 @@ fn memory_gpu_matmul_test() {
 
 #[test]
 fn quick_custom_kernel_test() {
-    let mut calc: QuickCalculator<f32> = QuickCalculator::<f32>::init()
+    let mut calc: QuickCalculator<f64> = QuickCalculator::<f64>::init()
         .expect("Failed to initialize calculator");
 
     let new_program: &str = r#"
     kernel void ax_plus_b (
-        global float* c,
+        global double* c,
         const int N,
-        const global float* a,
-        const global float* b,
-        const global float* x
+        const global double* a,
+        const global double* b,
+        const global double* x
     ) {
         const int globalOutputIdx = get_global_id(0);
     
-        float interm = 0.0f;
+        double interm = 0.0f;
         for (int k = 0; k < N; k++) {
             interm += a[globalOutputIdx * N + k] * x[k];
         }
@@ -68,16 +68,16 @@ fn quick_custom_kernel_test() {
 
     let new_kernel_name: &str = "ax_plus_b";
 
-    let custom_param_function: QuickParameterFunction<f32> = Box::new(
-        | input_stored_mats: Option<Vec<&Matrix<f32>>>, input_temp_mats: Option<Vec<&Matrix<f32>>> |
+    let custom_param_function: QuickParameterFunction<f64> = Box::new(
+        | input_stored_mats: Option<Vec<&Matrix<f64>>>, input_temp_mats: Option<Vec<&Matrix<f64>>> |
             -> Result<(usize, usize, Vec<usize>)>
         {
             if input_stored_mats.is_none() || input_temp_mats.is_none() {
                 return Err(Jeeperr::ArgumentError)
             }
 
-            let stored_mats: Vec<&Matrix<f32>> = input_stored_mats.unwrap();
-            let temp_mats: Vec<&Matrix<f32>> = input_temp_mats.unwrap();
+            let stored_mats: Vec<&Matrix<f64>> = input_stored_mats.unwrap();
+            let temp_mats: Vec<&Matrix<f64>> = input_temp_mats.unwrap();
             
             if stored_mats.len() != 2 {
                 return Err(Jeeperr::ArgumentError)
@@ -86,10 +86,10 @@ fn quick_custom_kernel_test() {
                 return Err(Jeeperr::ArgumentError)
             }
 
-            let a: &Matrix<f32> = stored_mats[0];
-            let b: &Matrix<f32> = stored_mats[1];
+            let a: &Matrix<f64> = stored_mats[0];
+            let b: &Matrix<f64> = stored_mats[1];
 
-            let x: &Matrix<f32> = temp_mats[0];
+            let x: &Matrix<f64> = temp_mats[0];
 
             if a.get_cols() != x.get_rows() {
                 return Err(Jeeperr::DimensionError)
@@ -114,19 +114,19 @@ fn quick_custom_kernel_test() {
             .expect("Failed to load custom function")
     };
 
-    let a_vec: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
-    let b_vec: Vec<f32> = vec![2.0, 5.0];
+    let a_vec: Vec<f64> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+    let b_vec: Vec<f64> = vec![2.0, 5.0];
     
-    let x_vec: Vec<f32> = vec![1.0, 0.0, 2.0];
+    let x_vec: Vec<f64> = vec![1.0, 0.0, 2.0];
 
-    let c_vec: Vec<f32> = vec![9.0, 21.0];
+    let c_vec: Vec<f64> = vec![9.0, 21.0];
 
-    let a_mat: Matrix<f32> = Matrix::new(a_vec, 2, 3)
+    let a_mat: Matrix<f64> = Matrix::new(a_vec, 2, 3)
         .expect("Failed to create Matrix A");
-    let b_mat: Matrix<f32> = Matrix::new(b_vec, 2, 1)
+    let b_mat: Matrix<f64> = Matrix::new(b_vec, 2, 1)
         .expect("Failed to create Matrix B");
 
-    let x_mat: Matrix<f32> = Matrix::new(x_vec, 3, 1)
+    let x_mat: Matrix<f64> = Matrix::new(x_vec, 3, 1)
         .expect("Failed to create Matrix X");
 
     let a_idx: usize = calc.store_matrix(a_mat)

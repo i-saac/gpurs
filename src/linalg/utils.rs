@@ -20,7 +20,7 @@ pub fn dot(a: Vec<f32>, b: Vec<f32>) -> Result<f32> {
     return Ok(dot_prod)
 }
 
-pub fn lu_decomp(matrix: &Matrix) -> Result<Matrix> {
+pub fn lu_decomp(matrix: &Matrix<f32>) -> Result<Matrix<f32>> {
     if matrix.get_rows() != matrix.get_cols() {
         return Err(Jeeperr::DimensionError)
     }
@@ -47,13 +47,13 @@ pub fn lu_decomp(matrix: &Matrix) -> Result<Matrix> {
     return Ok(Matrix::new(lu_data, dim_n, dim_n)?)
 }
 
-pub fn linear_solve_matrix(a_mat: &Matrix, b_vec: &Matrix) -> Result<Matrix> {
+pub fn linear_solve_matrix(a_mat: &Matrix<f32>, b_vec: &Matrix<f32>) -> Result<Matrix<f32>> {
     if a_mat.get_rows() != a_mat.get_cols() || a_mat.get_cols() != b_vec.get_rows() || b_vec.get_cols() != 1 {
         return Err(Jeeperr::DimensionError)
     }
     let dim_n: usize = a_mat.get_rows();
 
-    let lu_matrix: Matrix = lu_decomp(a_mat)?;
+    let lu_matrix: Matrix<f32> = lu_decomp(a_mat)?;
 
     let mut y_data: Vec<f32> = vec![0.0; dim_n];
     for idx in 0..dim_n {
@@ -79,7 +79,7 @@ pub fn linear_solve_matrix(a_mat: &Matrix, b_vec: &Matrix) -> Result<Matrix> {
 }
 
 /// Max value of a matrix
-pub fn max(matrix: &Matrix) -> f32 {
+pub fn max(matrix: &Matrix<f32>) -> f32 {
     let max_val: f32 = matrix.get_data()
         .iter()
         .fold(f32::MIN, |left, &right| left.max(right));
@@ -88,7 +88,7 @@ pub fn max(matrix: &Matrix) -> f32 {
 }
 
 /// Max values of a matrix along an axis
-pub fn axis_max(matrix: &Matrix, axis: Axis) -> Matrix {
+pub fn axis_max(matrix: &Matrix<f32>, axis: Axis) -> Matrix<f32> {
     match axis {
         Axis::Row => {
             let mut max_data: Vec<f32> = Vec::with_capacity(matrix.get_rows());
@@ -124,7 +124,7 @@ pub fn axis_max(matrix: &Matrix, axis: Axis) -> Matrix {
 }
 
 /// Min value of a matrix
-pub fn min(matrix: &Matrix) -> f32 {
+pub fn min(matrix: &Matrix<f32>) -> f32 {
     let min_val: f32 = matrix.get_data()
         .iter()
         .fold(f32::MAX, |left, &right| left.min(right));
@@ -133,7 +133,7 @@ pub fn min(matrix: &Matrix) -> f32 {
 }
 
 /// Min values of a matrix along an axis
-pub fn axis_min(matrix: &Matrix, axis: Axis) -> Matrix {
+pub fn axis_min(matrix: &Matrix<f32>, axis: Axis) -> Matrix<f32> {
     match axis {
         Axis::Row => {
             let mut min_data: Vec<f32> = Vec::with_capacity(matrix.get_rows());
@@ -169,7 +169,7 @@ pub fn axis_min(matrix: &Matrix, axis: Axis) -> Matrix {
 }
 
 /// Concatenate a slice of matrices together
-pub fn concatenate(matrices: &[Matrix], axis: Axis) -> Result<Matrix> {
+pub fn concatenate(matrices: &[Matrix<f32>], axis: Axis) -> Result<Matrix<f32>> {
     match axis {
         Axis::Row => {
             if matrices.iter().any(|mat| mat.get_cols() != matrices[0].get_cols()) {

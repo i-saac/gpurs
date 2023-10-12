@@ -11,12 +11,15 @@ pub use quick_calculator::QuickParameterFunction;
 const INIT_MEMORY_CAPACITY: usize = 3;
 
 /// List of default kernel names
-const PROGRAM_LIST: [&str; 1] = [
+const PROGRAM_LIST_FLOAT: [&str; 1] = [
+    "mat_mul"
+];
+const PROGRAM_LIST_DOUBLE: [&str; 1] = [
     "mat_mul"
 ];
 
 /// Source code for default kernels
-const PROGRAM_SOURCE: &str = r#"
+const PROGRAM_SOURCE_FLOAT: &str = r#"
 kernel void mat_mul (
     global float* c,
     const int N,
@@ -28,6 +31,25 @@ kernel void mat_mul (
     const int globalCol = get_global_id(1);
 
     float interm = 0.0f;
+    for (int k = 0; k < K; k++) {
+        interm += a[globalRow * K + k] * b[k * N + globalCol];
+    }
+
+    c[globalRow * N + globalCol] = interm;
+}
+"#;
+const PROGRAM_SOURCE_DOUBLE: &str = r#"
+kernel void mat_mul (
+    global double* c,
+    const int N,
+    const int K,
+    const global double* a,
+    const global double* b
+) {
+    const int globalRow = get_global_id(0);
+    const int globalCol = get_global_id(1);
+
+    double interm = 0.0;
     for (int k = 0; k < K; k++) {
         interm += a[globalRow * K + k] * b[k * N + globalCol];
     }
