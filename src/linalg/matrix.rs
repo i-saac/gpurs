@@ -226,6 +226,12 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> ops::Index<[usize; 2]> for Mat
     }
 }
 
+impl<T: IsFloat + std::fmt::Debug + Copy + Clone> ops::IndexMut<[usize; 2]> for Matrix<T> {
+    fn index_mut(&mut self, index: [usize; 2]) -> &mut T {
+        return &mut self.data[index[0] * self.cols + index[1]];
+    }
+}
+
 /// Add matrix with float
 impl ops::Add<f32> for Matrix<f32> {
     type Output = Matrix<f32>;

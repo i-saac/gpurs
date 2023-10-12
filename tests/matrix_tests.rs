@@ -3,12 +3,15 @@ use gpurs::linalg::Matrix;
 #[test]
 fn indexing_tests() {
     let mat_data: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0];
-    let mat: Matrix<f32> = Matrix::new(mat_data, 3, 4).expect("Failed to create Matrix");
+    let mut mat: Matrix<f32> = Matrix::new(mat_data, 3, 4).expect("Failed to create Matrix");
 
     assert_eq!(mat[[1, 2]], 7.0, "Index value not as expected");
-    assert_eq!(mat.col_vec(2).expect("Failed to index row"), vec![3.0, 7.0, 11.0], "Column vector not as expected");
-    assert_eq!(mat.row_vec(0).expect("Failed to index col"), vec![1.0, 2.0, 3.0, 4.0], "Row vector not as expected");
+    assert_eq!(mat.col_vec(2).expect("Failed to index col"), vec![3.0, 7.0, 11.0], "Column vector not as expected");
+    assert_eq!(mat.row_vec(0).expect("Failed to index row"), vec![1.0, 2.0, 3.0, 4.0], "Row vector not as expected");
     assert_eq!(mat.slice_index(&[0, 2], &[2, 3]).get_data(), vec![3.0, 4.0, 11.0, 12.0], "Slice index not as expected");
+
+    mat[[0, 3]] = 5.0;
+    assert_eq!(mat.col_vec(3).expect("Failed to index col"), vec![5.0, 8.0, 12.0], "Mutable index not working");
 }
 
 #[test]
