@@ -1,3 +1,5 @@
+#![cfg(feature = "gpu_accel")]
+
 use gpurs::Result;
 use gpurs::Jeeperr;
 use gpurs::linalg::Matrix;

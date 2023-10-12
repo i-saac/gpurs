@@ -12,4 +12,8 @@ license = "Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-opencl3 = "0.9.3"
+opencl3 = {version="0.9.3", optional=true}
+
+[features]
+default = ["gpu_accel"]
+gpu_accel = ["dep:opencl3"]

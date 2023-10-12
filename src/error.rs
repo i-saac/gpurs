@@ -1,6 +1,7 @@
 use std::fmt;
 use std::error::Error;
 
+#[cfg(feature = "gpu_accel")]
 use opencl3::error_codes::ClError;
 
 /// Error enum for gpurs crate
@@ -11,7 +12,7 @@ pub enum Jeeperr {
     IndexError,
     MemoryError,
     OutputError,
-    ClError(ClError),
+    #[cfg(feature = "gpu_accel")] ClError(ClError),
     Error(String)
 }
 
@@ -28,7 +29,7 @@ impl fmt::Display for Jeeperr {
                 write!(f, "Memory Calculator and Handler have inconsistent memory"),
             Jeeperr::OutputError =>
                 write!(f, "Invalid output type"),
-            Jeeperr::ClError(error) =>
+            #[cfg(feature = "gpu_accel")] Jeeperr::ClError(error) =>
                 write!(f, "{}", error),
             Jeeperr::Error(error) =>
                 write!(f, "{}", error)
@@ -38,6 +39,7 @@ impl fmt::Display for Jeeperr {
 
 impl Error for Jeeperr {}
 
+#[cfg(feature = "gpu_accel")]
 impl From<ClError> for Jeeperr {
     fn from(err: ClError) -> Self {
         Jeeperr::ClError(err)

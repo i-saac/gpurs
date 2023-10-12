@@ -1,3 +1,5 @@
+#![cfg(feature = "gpu_accel")]
+
 use std::time::Instant;
 
 use gpurs::Result;
