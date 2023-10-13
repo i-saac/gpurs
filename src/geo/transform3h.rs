@@ -174,6 +174,20 @@ impl Transform3h<f64> {
     }
 }
 
+impl<T: IsFloat> ops::Index<[usize; 2]> for Transform3h<T> {
+    type Output = T;
+
+    fn index(&self, idx: [usize; 2]) -> &T {
+        return &self.data[idx[0] * 4 + idx[1]]
+    }
+}
+
+impl<T: IsFloat> ops::IndexMut<[usize; 2]> for Transform3h<T> {
+    fn index_mut(&mut self, idx: [usize; 2]) -> &mut T {
+        return &mut self.data[idx[0] * 4 + idx[1]]
+    }
+}
+
 impl ops::Mul<Transform3h<f32>> for Transform3h<f32> {
     type Output = Transform3h<f32>;
 
