@@ -2,6 +2,7 @@ use std::ops;
 
 use crate::IsFloat;
 
+/// Vector for 3D Homogeneous Coordinates.
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3h<T: IsFloat> {
     pub x: T,
@@ -11,33 +12,40 @@ pub struct Vec3h<T: IsFloat> {
 }
 
 impl Vec3h<f32> {
+    /// Unit vector along the x axis.
     pub fn i() -> Vec3h<f32> {
         Vec3h { x: 1.0, y: 0.0, z: 0.0, w: 1.0 }
     }
 
+    /// Unit vector along the y axis.
     pub fn j() -> Vec3h<f32> {
         Vec3h { x: 0.0, y: 1.0, z: 0.0, w: 1.0 }
     }
 
+    /// Unit vector along the x axis.
     pub fn k() -> Vec3h<f32> {
         Vec3h { x: 0.0, y: 0.0, z: 1.0, w: 1.0 }
     }
 }
 
 impl Vec3h<f64> {
+    /// Unit vector along the x axis.
     pub fn i() -> Vec3h<f64> {
         Vec3h { x: 1.0, y: 0.0, z: 0.0, w: 1.0 }
     }
 
+    /// Unit vector along the y axis.
     pub fn j() -> Vec3h<f64> {
         Vec3h { x: 0.0, y: 1.0, z: 0.0, w: 1.0 }
     }
 
+    /// Unit vector along the z axis.
     pub fn k() -> Vec3h<f64> {
         Vec3h { x: 0.0, y: 0.0, z: 1.0, w: 1.0 }
     }
 }
 
+/// Add vector to vector.
 impl ops::Add<Vec3h<f32>> for Vec3h<f32> {
     type Output = Vec3h<f32>;
 
@@ -51,6 +59,7 @@ impl ops::Add<Vec3h<f32>> for Vec3h<f32> {
     }
 }
 
+/// Add vector to vector.
 impl ops::Add<Vec3h<f64>> for Vec3h<f64> {
     type Output = Vec3h<f64>;
 
@@ -64,6 +73,7 @@ impl ops::Add<Vec3h<f64>> for Vec3h<f64> {
     }
 }
 
+/// Negate vector.
 impl ops::Neg for Vec3h<f32> {
     type Output = Vec3h<f32>;
 
@@ -72,6 +82,7 @@ impl ops::Neg for Vec3h<f32> {
     }
 }
 
+/// Negate vector.
 impl ops::Neg for Vec3h<f64> {
     type Output = Vec3h<f64>;
 
@@ -80,6 +91,7 @@ impl ops::Neg for Vec3h<f64> {
     }
 }
 
+/// Subtract vector from vector.
 impl ops::Sub<Vec3h<f32>> for Vec3h<f32> {
     type Output = Vec3h<f32>;
 
@@ -93,6 +105,7 @@ impl ops::Sub<Vec3h<f32>> for Vec3h<f32> {
     }
 }
 
+/// Subtract vector from vector.
 impl ops::Sub<Vec3h<f64>> for Vec3h<f64> {
     type Output = Vec3h<f64>;
 

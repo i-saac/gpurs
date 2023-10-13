@@ -6,7 +6,7 @@ use crate::IsFloat;
 use crate::Result;
 use crate::Jeeperr;
 
-/// Float matrix struct
+/// Generic dynamically-sized Matrix struct for the entire gpurs library.
 #[derive(Debug, Clone)]
 pub struct Matrix<T: IsFloat + std::fmt::Debug + Copy + Clone> {
     data: Vec<T>,
@@ -15,7 +15,7 @@ pub struct Matrix<T: IsFloat + std::fmt::Debug + Copy + Clone> {
 }
 
 impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
-    /// Create new matrix (includes error checking)
+    /// Create new matrix (includes error checking).
     pub fn new(data: Vec<T>, rows: usize, cols: usize) -> Result<Matrix<T>> {
         let vec_len: usize = data.len();
         let comp_len: usize = rows * cols;
@@ -30,22 +30,22 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
         }
     }
 
-    /// Get number of rows in matrix
+    /// Get number of rows in matrix.
     pub fn get_rows(&self) -> usize {
         return self.rows
     }
 
-    /// Get number of cols in matrix
+    /// Get number of cols in matrix.
     pub fn get_cols(&self) -> usize {
         return self.cols
     }
 
-    /// Get matrix data in slice form
+    /// Get matrix data in slice form.
     pub fn get_data(&self) -> &[T] {
         return &self.data
     }
 
-    /// Get indexed row of matrix in matrix form
+    /// Get indexed row of matrix in matrix form.
     pub fn row_matrix(&self, row_idx: usize) -> Result<Matrix<T>> {
         if row_idx >= self.rows {
             return Err(Jeeperr::IndexError)
@@ -59,7 +59,7 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
         return Ok(Matrix { data: output_row_data, rows: 1, cols: self.cols })
     }
 
-    /// Get indexed row of matrix in vector form
+    /// Get indexed row of matrix in vector form.
     pub fn row_vec(&self, row_idx: usize) -> Result<Vec<T>> {
         if row_idx >= self.rows {
             return Err(Jeeperr::IndexError)
@@ -73,7 +73,7 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
         return Ok(output_row)
     }
 
-    /// Get indexed col of matrix in matrix form
+    /// Get indexed col of matrix in matrix form.
     pub fn col_matrix(&self, col_idx: usize) -> Result<Matrix<T>> {
         if col_idx >= self.cols {
             return Err(Jeeperr::IndexError)
@@ -89,7 +89,7 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
         return Ok(Matrix { data: output_col_data, rows: self.rows, cols: 1 })
     }
 
-    /// Get indexed col of matrix in vector form
+    /// Get indexed col of matrix in vector form.
     pub fn col_vec(&self, col_idx: usize) -> Result<Vec<T>> {
         if col_idx >= self.cols {
             return Err(Jeeperr::IndexError)
@@ -105,7 +105,7 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
         return Ok(output_col)
     }
 
-    /// Index matrix using usize slices, outputing matrix of the index intersections
+    /// Index matrix using usize slices, outputing matrix of the index intersections.
     pub fn slice_index(&self, row_idcs: &[usize], col_idcs: &[usize]) -> Matrix<T> {
         let output_rows: usize = row_idcs.len();
         let output_cols: usize = col_idcs.len();
@@ -119,7 +119,7 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
         return Matrix { data: output_data, rows: output_rows, cols: output_cols }
     }
 
-    /// Matrix transpose
+    /// Matrix transpose.
     pub fn transpose(self) -> Matrix<T> {
         let mut transpose_data: Vec<T> = Vec::with_capacity(self.rows * self.cols);
 
@@ -134,20 +134,21 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
 }
 
 impl Matrix<f32> {
-    /// Create new matrix of zeros
+    /// Create new matrix of zeros.
     pub fn zeros(rows: usize, cols: usize) -> Matrix<f32> {
         let data: Vec<f32> = vec![0.0; rows * cols];
 
         return Matrix { data, rows, cols }
     }
 
-    /// Create new matrix of ones
+    /// Create new matrix of ones.
     pub fn ones(rows: usize, cols: usize) -> Matrix<f32> {
         let data: Vec<f32> = vec![1.0; rows * cols];
 
         return Matrix { data, rows, cols }
     }
 
+    /// Create new identity matrix.
     pub fn identity(dim_n: usize) -> Matrix<f32> {
         let mut data: Vec<f32> = vec![0.0; dim_n * dim_n];
         
@@ -158,7 +159,7 @@ impl Matrix<f32> {
         return Matrix { data, rows: dim_n, cols: dim_n };
     }
 
-    /// Elementwise multiplication between two matrices
+    /// Elementwise multiplication between two matrices.
     pub fn elementwise(self, rhs: Matrix<f32>) -> Result<Matrix<f32>> {
         if self.rows != rhs.rows || self.cols != rhs.cols {
             return Err(Jeeperr::DimensionError)
@@ -176,20 +177,21 @@ impl Matrix<f32> {
 }
 
 impl Matrix<f64> {
-    /// Create new matrix of zeros
+    /// Create new matrix of zeros.
     pub fn zeros(rows: usize, cols: usize) -> Matrix<f64> {
         let data: Vec<f64> = vec![0.0; rows * cols];
 
         return Matrix { data, rows, cols }
     }
 
-    /// Create new matrix of ones
+    /// Create new matrix of ones.
     pub fn ones(rows: usize, cols: usize) -> Matrix<f64> {
         let data: Vec<f64> = vec![1.0; rows * cols];
 
         return Matrix { data, rows, cols }
     }
 
+    /// Create new identity matrix.
     pub fn identity(dim_n: usize) -> Matrix<f64> {
         let mut data: Vec<f64> = vec![0.0; dim_n * dim_n];
         
@@ -200,7 +202,7 @@ impl Matrix<f64> {
         return Matrix { data, rows: dim_n, cols: dim_n };
     }
 
-    /// Elementwise multiplication between two matrices
+    /// Elementwise multiplication between two matrices.
     pub fn elementwise(self, rhs: Matrix<f64>) -> Result<Matrix<f64>> {
         if self.rows != rhs.rows || self.cols != rhs.cols {
             return Err(Jeeperr::DimensionError)
@@ -217,7 +219,7 @@ impl Matrix<f64> {
     }
 }
 
-/// Index using the form matrix[[row, col]]
+/// Get value of matrix at index [row, col].
 impl<T: IsFloat + std::fmt::Debug + Copy + Clone> ops::Index<[usize; 2]> for Matrix<T> {
     type Output = T;
 
@@ -226,13 +228,14 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> ops::Index<[usize; 2]> for Mat
     }
 }
 
+/// Modify value of matrix at index [row, col].
 impl<T: IsFloat + std::fmt::Debug + Copy + Clone> ops::IndexMut<[usize; 2]> for Matrix<T> {
     fn index_mut(&mut self, index: [usize; 2]) -> &mut T {
         return &mut self.data[index[0] * self.cols + index[1]];
     }
 }
 
-/// Add matrix with float
+/// Add matrix with float.
 impl ops::Add<f32> for Matrix<f32> {
     type Output = Matrix<f32>;
 
@@ -245,7 +248,7 @@ impl ops::Add<f32> for Matrix<f32> {
     }
 }
 
-/// Add matrix with float
+/// Add matrix with float.
 impl ops::Add<f64> for Matrix<f64> {
     type Output = Matrix<f64>;
 
@@ -258,7 +261,7 @@ impl ops::Add<f64> for Matrix<f64> {
     }
 }
 
-/// Add Matrix with Matrix
+/// Add Matrix with Matrix.
 impl ops::Add<Matrix<f32>> for Matrix<f32> {
     type Output = Result<Matrix<f32>>;
 
@@ -276,7 +279,7 @@ impl ops::Add<Matrix<f32>> for Matrix<f32> {
     }
 }
 
-/// Add Matrix with Matrix
+/// Add Matrix with Matrix.
 impl ops::Add<Matrix<f64>> for Matrix<f64> {
     type Output = Result<Matrix<f64>>;
 
@@ -294,7 +297,7 @@ impl ops::Add<Matrix<f64>> for Matrix<f64> {
     }
 }
 
-/// Add float with Matrix
+/// Add float with Matrix.
 impl ops::Add<Matrix<f32>> for f32 {
     type Output = Matrix<f32>;
 
@@ -307,7 +310,7 @@ impl ops::Add<Matrix<f32>> for f32 {
     }
 }
 
-/// Add float with Matrix
+/// Add float with Matrix.
 impl ops::Add<Matrix<f64>> for f64 {
     type Output = Matrix<f64>;
 
@@ -320,7 +323,7 @@ impl ops::Add<Matrix<f64>> for f64 {
     }
 }
 
-/// Negate Matrix
+/// Negate Matrix.
 impl ops::Neg for Matrix<f32> {
     type Output = Matrix<f32>;
 
@@ -333,7 +336,7 @@ impl ops::Neg for Matrix<f32> {
     }
 }
 
-/// Negate Matrix
+/// Negate Matrix.
 impl ops::Neg for Matrix<f64> {
     type Output = Matrix<f64>;
 
@@ -346,7 +349,7 @@ impl ops::Neg for Matrix<f64> {
     }
 }
 
-/// Subtract float from Matrix
+/// Subtract float from Matrix.
 impl ops::Sub<f32> for Matrix<f32> {
     type Output = Matrix<f32>;
 
@@ -359,7 +362,7 @@ impl ops::Sub<f32> for Matrix<f32> {
     }
 }
 
-/// Subtract float from Matrix
+/// Subtract float from Matrix.
 impl ops::Sub<f64> for Matrix<f64> {
     type Output = Matrix<f64>;
 
@@ -372,7 +375,7 @@ impl ops::Sub<f64> for Matrix<f64> {
     }
 }
 
-/// Subtract Matrix from Matrix
+/// Subtract Matrix from Matrix.
 impl ops::Sub<Matrix<f32>> for Matrix<f32> {
     type Output = Result<Matrix<f32>>;
 
@@ -390,7 +393,7 @@ impl ops::Sub<Matrix<f32>> for Matrix<f32> {
     }
 }
 
-/// Subtract Matrix from Matrix
+/// Subtract Matrix from Matrix.
 impl ops::Sub<Matrix<f64>> for Matrix<f64> {
     type Output = Result<Matrix<f64>>;
 
@@ -408,7 +411,7 @@ impl ops::Sub<Matrix<f64>> for Matrix<f64> {
     }
 }
 
-/// Subtract Matrix from float
+/// Subtract Matrix from float.
 impl ops::Sub<Matrix<f32>> for f32 {
     type Output = Matrix<f32>;
 
@@ -421,7 +424,7 @@ impl ops::Sub<Matrix<f32>> for f32 {
     }
 }
 
-/// Subtract Matrix from float
+/// Subtract Matrix from float.
 impl ops::Sub<Matrix<f64>> for f64 {
     type Output = Matrix<f64>;
 
@@ -434,7 +437,7 @@ impl ops::Sub<Matrix<f64>> for f64 {
     }
 }
 
-/// Multiply Matrix by float
+/// Multiply Matrix by float.
 impl ops::Mul<f32> for Matrix<f32> {
     type Output = Matrix<f32>;
 
@@ -447,7 +450,7 @@ impl ops::Mul<f32> for Matrix<f32> {
     }
 }
 
-/// Multiply Matrix by float
+/// Multiply Matrix by float.
 impl ops::Mul<f64> for Matrix<f64> {
     type Output = Matrix<f64>;
 
@@ -460,7 +463,7 @@ impl ops::Mul<f64> for Matrix<f64> {
     }
 }
 
-/// Multiply float by Matrix
+/// Multiply float by Matrix.
 impl ops::Mul<Matrix<f32>> for f32 {
     type Output = Matrix<f32>;
 
@@ -473,7 +476,7 @@ impl ops::Mul<Matrix<f32>> for f32 {
     }
 }
 
-/// Multiply float by Matrix
+/// Multiply float by Matrix.
 impl ops::Mul<Matrix<f64>> for f64 {
     type Output = Matrix<f64>;
 
@@ -486,7 +489,7 @@ impl ops::Mul<Matrix<f64>> for f64 {
     }
 }
 
-/// Multiply Matrix by Matrix
+/// Multiply Matrix by Matrix.
 impl ops::Mul<Matrix<f32>> for Matrix<f32> {
     type Output = Result<Matrix<f32>>;
 
@@ -511,7 +514,7 @@ impl ops::Mul<Matrix<f32>> for Matrix<f32> {
     }
 }
 
-/// Multiply Matrix by Matrix
+/// Multiply Matrix by Matrix.
 impl ops::Mul<Matrix<f64>> for Matrix<f64> {
     type Output = Result<Matrix<f64>>;
 
@@ -536,7 +539,7 @@ impl ops::Mul<Matrix<f64>> for Matrix<f64> {
     }
 }
 
-/// Print Matrix in a readable way
+/// Print Matrix in a readable way.
 impl<T: IsFloat + std::fmt::Debug + Copy + Clone> std::fmt::Display for Matrix<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         writeln!(f, "[{:?}", self.row_vec(0).unwrap())?;

@@ -3,25 +3,34 @@ use crate::Result;
 use crate::Jeeperr;
 use crate::linalg::Matrix;
 
-/// Axis enum for use in utility functions
+/// Axis enum for use in utility functions.
 pub enum Axis {
     Row,
     Col
 }
 
+/// Traint containing utility functions for the Matrix struct.
 pub trait MatrixUtilities<T: IsFloat + std::fmt::Debug + Copy + Clone> {
+    /// Perform partial LU decomposition of a matrix.
     fn lu_decomp(matrix: &Matrix<T>) -> Result<Matrix<T>>;
+    /// Solve system of linear equations Ax=b.
     fn linear_solve_matrix(a_mat: &Matrix<T>, b_vec: &Matrix<T>) -> Result<Matrix<T>>;
 
+    /// Find absolute maximum value of matrix.
     fn max(matrix: &Matrix<T>) -> T;
+    /// Find maximum value of matrix along an axis.
     fn axis_max(matrix: &Matrix<T>, axis: Axis) -> Matrix<T>;
+    /// Find absolute minimum value of matrix.
     fn min(matrix: &Matrix<T>) -> T;
+    /// Find minimum value of matrix along an axis.
     fn axis_min(matrix: &Matrix<T>, axis: Axis) -> Matrix<T>;
 
+    /// Concatenate slice of matrices together along an axis.
     fn concatenate(matrices: &[Matrix<T>], axis: Axis) -> Result<Matrix<T>>;
 }
 
 impl MatrixUtilities<f32> for Matrix<f32> {
+    /// Perform partial LU decomposition of a matrix.
     fn lu_decomp(matrix: &Matrix<f32>) -> Result<Matrix<f32>> {
         if matrix.get_rows() != matrix.get_cols() {
             return Err(Jeeperr::DimensionError)
@@ -49,6 +58,7 @@ impl MatrixUtilities<f32> for Matrix<f32> {
         return Ok(Matrix::new(lu_data, dim_n, dim_n)?)
     }
 
+    /// Solve system of linear equations Ax=b.
     fn linear_solve_matrix(a_mat: &Matrix<f32>, b_vec: &Matrix<f32>) -> Result<Matrix<f32>> {
         if a_mat.get_rows() != a_mat.get_cols() || a_mat.get_cols() != b_vec.get_rows() || b_vec.get_cols() != 1 {
             return Err(Jeeperr::DimensionError)
@@ -80,6 +90,7 @@ impl MatrixUtilities<f32> for Matrix<f32> {
         return Ok(Matrix::new(x_data, dim_n, 1)?);
     }
 
+    /// Find absolute maximum value of matrix.
     fn max(matrix: &Matrix<f32>) -> f32 {
         let max_val: f32 = matrix.get_data()
             .iter()
@@ -88,6 +99,7 @@ impl MatrixUtilities<f32> for Matrix<f32> {
         return max_val
     }
 
+    /// Find maximum value of matrix along an axis.
     fn axis_max(matrix: &Matrix<f32>, axis: Axis) -> Matrix<f32> {
         match axis {
             Axis::Row => {
@@ -123,6 +135,7 @@ impl MatrixUtilities<f32> for Matrix<f32> {
         }
     }
 
+    /// Find absolute minimum value of matrix.
     fn min(matrix: &Matrix<f32>) -> f32 {
         let min_val: f32 = matrix.get_data()
             .iter()
@@ -131,6 +144,7 @@ impl MatrixUtilities<f32> for Matrix<f32> {
         return min_val
     }
 
+    /// Find minimum value of matrix along an axis.
     fn axis_min(matrix: &Matrix<f32>, axis: Axis) -> Matrix<f32> {
         match axis {
             Axis::Row => {
@@ -166,6 +180,7 @@ impl MatrixUtilities<f32> for Matrix<f32> {
         }
     }
 
+    /// Concatenate slice of matrices together along an axis.
     fn concatenate(matrices: &[Matrix<f32>], axis: Axis) -> Result<Matrix<f32>> {
         match axis {
             Axis::Row => {
@@ -204,6 +219,7 @@ impl MatrixUtilities<f32> for Matrix<f32> {
 }
 
 impl MatrixUtilities<f64> for Matrix<f64> {
+    /// Perform partial LU decomposition of a matrix.
     fn lu_decomp(matrix: &Matrix<f64>) -> Result<Matrix<f64>> {
         if matrix.get_rows() != matrix.get_cols() {
             return Err(Jeeperr::DimensionError)
@@ -231,6 +247,7 @@ impl MatrixUtilities<f64> for Matrix<f64> {
         return Ok(Matrix::new(lu_data, dim_n, dim_n)?)
     }
 
+    /// Solve system of linear equations Ax=b.
     fn linear_solve_matrix(a_mat: &Matrix<f64>, b_vec: &Matrix<f64>) -> Result<Matrix<f64>> {
         if a_mat.get_rows() != a_mat.get_cols() || a_mat.get_cols() != b_vec.get_rows() || b_vec.get_cols() != 1 {
             return Err(Jeeperr::DimensionError)
@@ -262,6 +279,7 @@ impl MatrixUtilities<f64> for Matrix<f64> {
         return Ok(Matrix::new(x_data, dim_n, 1)?);
     }
 
+    /// Find absolute maximum value of matrix.
     fn max(matrix: &Matrix<f64>) -> f64 {
         let max_val: f64 = matrix.get_data()
             .iter()
@@ -270,6 +288,7 @@ impl MatrixUtilities<f64> for Matrix<f64> {
         return max_val
     }
 
+    /// Find maximum value of matrix along an axis.
     fn axis_max(matrix: &Matrix<f64>, axis: Axis) -> Matrix<f64> {
         match axis {
             Axis::Row => {
@@ -305,6 +324,7 @@ impl MatrixUtilities<f64> for Matrix<f64> {
         }
     }
 
+    /// Find absolute minimum value of matrix.
     fn min(matrix: &Matrix<f64>) -> f64 {
         let min_val: f64 = matrix.get_data()
             .iter()
@@ -313,6 +333,7 @@ impl MatrixUtilities<f64> for Matrix<f64> {
         return min_val
     }
 
+    /// Find minimum value of matrix along an axis.
     fn axis_min(matrix: &Matrix<f64>, axis: Axis) -> Matrix<f64> {
         match axis {
             Axis::Row => {
@@ -348,6 +369,7 @@ impl MatrixUtilities<f64> for Matrix<f64> {
         }
     }
 
+    /// Concatenate slice of matrices together along an axis.
     fn concatenate(matrices: &[Matrix<f64>], axis: Axis) -> Result<Matrix<f64>> {
         match axis {
             Axis::Row => {

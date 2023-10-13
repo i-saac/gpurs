@@ -1,3 +1,5 @@
+//! Module containing the Matrix struct and associated utilities.
+
 mod matrix;
 mod utils;
 

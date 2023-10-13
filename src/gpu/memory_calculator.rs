@@ -1,8 +1,8 @@
-//! Calculator object allowing for GPU-accelerated matrix calculations
+//! Calculator object allowing for GPU-accelerated matrix calculations.
 //! 
-//! Stores input and resultant matrices in GPU memory buffers for repeated use
+//! Stores input and resultant matrices in GPU memory buffers for repeated use.
 //! 
-//! Includes support for compilation and execution of custom kernels
+//! Includes support for compilation and execution of custom kernels.
 
 use crate::IsFloat;
 use crate::Result;
@@ -21,11 +21,11 @@ type ResultFunction<T> = Box<dyn Fn(
     Vec<usize>
 ) -> Result<(Matrix<T>, usize)>>;
 
-/// Shortcut type definition for closure defining output parameters for custom kernel
-/// Inputs is a list of matrices, the output is a Result containing a tuple of the output rows, output cols, and work sizes
+/// Shortcut type definition for closure defining output parameters for custom kernel.
+/// Input is a list of matrices, the output is a Result containing a tuple of the output rows, output cols, and work sizes.
 pub type MemoryParameterFunction<T> = Box<dyn Fn(Vec<&Matrix<T>>) -> Result<(usize, usize, Vec<usize>)>>;
 
-/// Wrapper that manages storage of matrices and custom kernels and manages calculation operations
+/// Wrapper that manages storage of matrices and custom kernels and manages calculation operations.
 pub struct MemoryCalculator<T: IsFloat + std::fmt::Debug + Copy + Clone> {
     memory_handler: MemoryHandler<T>, // Memory handler
     matrices: Vec<Matrix<T>>, // Calculator memory vector
@@ -35,7 +35,7 @@ pub struct MemoryCalculator<T: IsFloat + std::fmt::Debug + Copy + Clone> {
 }
 
 impl<T: IsFloat + std::fmt::Debug + Copy + Clone> MemoryCalculator<T> {
-    /// Store matrix to calculator and gpu memory
+    /// Store matrix to calculator and gpu memory.
     pub fn store_matrix(&mut self, matrix: Matrix<T>) -> Result<usize> {
         // Store matrix to calculator memory
         self.matrices.push(matrix.clone());
@@ -54,7 +54,7 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> MemoryCalculator<T> {
 }
 
 impl MemoryCalculator<f32> {
-    /// Initializes Calculator struct
+    /// Initializes Calculator struct.
     pub fn init() -> Result<MemoryCalculator<f32>> {
         // Initialize vector of kernel names
         let program_vec: Vec<&str> = super::PROGRAM_LIST_FLOAT.to_vec();
@@ -80,7 +80,7 @@ impl MemoryCalculator<f32> {
         Ok(output)
     }
 
-    /// Multiply Matrix and Matrix
+    /// Multiply Matrix and Matrix.
     pub fn mat_mul(&mut self, left_idx: usize, right_idx: usize) -> Result<(Matrix<f32>, usize)> {
         let left: &Matrix<f32> = &self.matrices[left_idx];
         let right: &Matrix<f32> = &self.matrices[right_idx];
@@ -108,7 +108,7 @@ impl MemoryCalculator<f32> {
         Ok((output, output_idx))
     }
 
-    /// Compile and store a custom kernel and build/store a closure to execute said kernel
+    /// Compile and store a custom kernel and build/store a closure to execute said kernel.
     pub unsafe fn load_custom_fn(
         &mut self,
         program_source: &str,
@@ -151,7 +151,7 @@ impl MemoryCalculator<f32> {
         return Ok(self.customs.len() - 1);
     }
 
-    /// Execute custom kernel via pre-generated closure
+    /// Execute custom kernel via pre-generated closure.
     pub unsafe fn exec_custom_fn(
         &mut self,
         custom_index: usize,
@@ -190,7 +190,7 @@ impl MemoryCalculator<f32> {
 }
 
 impl MemoryCalculator<f64> {
-    /// Initializes Calculator struct
+    /// Initializes Calculator struct.
     pub fn init() -> Result<MemoryCalculator<f64>> {
         // Initialize vector of kernel names
         let program_vec: Vec<&str> = super::PROGRAM_LIST_DOUBLE.to_vec();
@@ -216,7 +216,7 @@ impl MemoryCalculator<f64> {
         Ok(output)
     }
 
-    /// Multiply Matrix and Matrix
+    /// Multiply Matrix and Matrix.
     pub fn mat_mul(&mut self, left_idx: usize, right_idx: usize) -> Result<(Matrix<f64>, usize)> {
         let left: &Matrix<f64> = &self.matrices[left_idx];
         let right: &Matrix<f64> = &self.matrices[right_idx];
@@ -244,7 +244,7 @@ impl MemoryCalculator<f64> {
         Ok((output, output_idx))
     }
 
-    /// Compile and store a custom kernel and build/store a closure to execute said kernel
+    /// Compile and store a custom kernel and build/store a closure to execute said kernel.
     pub unsafe fn load_custom_fn(
         &mut self,
         program_source: &str,
@@ -287,7 +287,7 @@ impl MemoryCalculator<f64> {
         return Ok(self.customs.len() - 1);
     }
 
-    /// Execute custom kernel via pre-generated closure
+    /// Execute custom kernel via pre-generated closure.
     pub unsafe fn exec_custom_fn(
         &mut self,
         custom_index: usize,

@@ -1,3 +1,5 @@
+//! Module for GPU Acceleration of Linear Algebra operations.
+
 mod memory;
 mod memory_calculator;
 mod quick_calculator;
@@ -7,10 +9,10 @@ pub use memory_calculator::MemoryParameterFunction;
 pub use quick_calculator::QuickCalculator;
 pub use quick_calculator::QuickParameterFunction;
 
-/// Default amount of memory slots for matrices in MemoryHandler and Calculator
+// Default amount of memory slots for matrices in MemoryCalculator and QuickCalculator
 const INIT_MEMORY_CAPACITY: usize = 3;
 
-/// List of default kernel names
+// List of default kernel names
 const PROGRAM_LIST_FLOAT: [&str; 1] = [
     "mat_mul"
 ];
@@ -18,7 +20,7 @@ const PROGRAM_LIST_DOUBLE: [&str; 1] = [
     "mat_mul"
 ];
 
-/// Source code for default kernels
+// Source code for default kernels
 const PROGRAM_SOURCE_FLOAT: &str = r#"
 kernel void mat_mul (
     global float* c,

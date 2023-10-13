@@ -3,18 +3,21 @@ use std::ops;
 use crate::IsFloat;
 use crate::geo::Vec3h;
 
+/// Linear Transformation Matrix for 3D Homogeneous Coordinates.
 #[derive(Debug, Clone)]
 pub struct Transform3h<T: IsFloat> {
     data: [T; 16]
 }
 
 impl<T: IsFloat> Transform3h<T> {
+    /// Return reference to transform data.
     pub fn get_data(&self) -> &[T] {
         return &self.data
     }
 }
 
 impl Transform3h<f32> {
+    /// Return identity matrix.
     pub fn identity() -> Transform3h<f32> {
         Transform3h { data: [
             1.0, 0.0, 0.0, 0.0,
@@ -24,6 +27,7 @@ impl Transform3h<f32> {
         ] }
     }
 
+    /// Return scaling matrix.
     pub fn scale(factor: f32) -> Transform3h<f32> {
         Transform3h { data: [
             factor, 0.0, 0.0, 0.0,
@@ -33,6 +37,7 @@ impl Transform3h<f32> {
         ] }
     }
 
+    /// Return translation matrix.
     pub fn translate(delta_x: f32, delta_y: f32, delta_z: f32) -> Transform3h<f32> {
         Transform3h { data: [
             1.0, 0.0, 0.0, delta_x,
@@ -42,6 +47,7 @@ impl Transform3h<f32> {
         ] }
     }
 
+    /// Return rotation matrix about x axis.
     pub fn rotation_x(theta_x: f32) -> Transform3h<f32> {
         Transform3h { data: [
             1.0, 0.0, 0.0, 0.0,
@@ -51,6 +57,7 @@ impl Transform3h<f32> {
         ] }
     }
 
+    /// Return rotation matrix about y axis.
     pub fn rotation_y(theta_y: f32) -> Transform3h<f32> {
         Transform3h { data: [
             theta_y.cos(), 0.0, theta_y.sin(), 0.0,
@@ -60,6 +67,7 @@ impl Transform3h<f32> {
         ] }
     }
 
+    /// Return rotation matrix about z axis.
     pub fn rotation_z(theta_z: f32) -> Transform3h<f32> {
         Transform3h { data: [
             theta_z.cos(), -theta_z.sin(), 0.0, 0.0,
@@ -69,6 +77,7 @@ impl Transform3h<f32> {
         ] }
     }
 
+    /// Return rotation matrix about arbitrary axis. Assumes axis components are of unit vector.
     pub fn rotation_arbitrary(axis_x: f32, axis_y: f32, axis_z: f32, theta: f32) -> Transform3h<f32> {
         let ct: f32 = theta.cos();
         let st: f32 = theta.sin();
@@ -95,6 +104,7 @@ impl Transform3h<f32> {
 }
 
 impl Transform3h<f64> {
+    /// Return identity matrix.
     pub fn identity() -> Transform3h<f64> {
         Transform3h { data: [
             1.0, 0.0, 0.0, 0.0,
@@ -104,6 +114,7 @@ impl Transform3h<f64> {
         ] }
     }
 
+    /// Return scaling matrix.
     pub fn scale(factor: f64) -> Transform3h<f64> {
         Transform3h { data: [
             factor, 0.0, 0.0, 0.0,
@@ -113,6 +124,7 @@ impl Transform3h<f64> {
         ] }
     }
 
+    /// Return translation matrix.
     pub fn translate(delta_x: f64, delta_y: f64, delta_z: f64) -> Transform3h<f64> {
         Transform3h { data: [
             1.0, 0.0, 0.0, delta_x,
@@ -122,6 +134,7 @@ impl Transform3h<f64> {
         ] }
     }
 
+    /// Return rotation matrix about x axis.
     pub fn rotation_x(theta_x: f64) -> Transform3h<f64> {
         Transform3h { data: [
             1.0, 0.0, 0.0, 0.0,
@@ -131,6 +144,7 @@ impl Transform3h<f64> {
         ] }
     }
 
+    /// Return rotation matrix about y axis.
     pub fn rotation_y(theta_y: f64) -> Transform3h<f64> {
         Transform3h { data: [
             theta_y.cos(), 0.0, theta_y.sin(), 0.0,
@@ -140,6 +154,7 @@ impl Transform3h<f64> {
         ] }
     }
 
+    /// Return rotation matrix about z axis.
     pub fn rotation_z(theta_z: f64) -> Transform3h<f64> {
         Transform3h { data: [
             theta_z.cos(), -theta_z.sin(), 0.0, 0.0,
@@ -149,6 +164,7 @@ impl Transform3h<f64> {
         ] }
     }
 
+    /// Return rotation matrix about arbitrary axis. Assumes axis components are of unit vector.
     pub fn rotation_arbitrary(axis_x: f64, axis_y: f64, axis_z: f64, theta: f64) -> Transform3h<f64> {
         let ct: f64 = theta.cos();
         let st: f64 = theta.sin();
@@ -174,6 +190,7 @@ impl Transform3h<f64> {
     }
 }
 
+/// Get value of transformation matrix at index [row, col]
 impl<T: IsFloat> ops::Index<[usize; 2]> for Transform3h<T> {
     type Output = T;
 
@@ -182,12 +199,14 @@ impl<T: IsFloat> ops::Index<[usize; 2]> for Transform3h<T> {
     }
 }
 
+/// Modify value of transformation matrix at index [row, col]
 impl<T: IsFloat> ops::IndexMut<[usize; 2]> for Transform3h<T> {
     fn index_mut(&mut self, idx: [usize; 2]) -> &mut T {
         return &mut self.data[idx[0] * 4 + idx[1]]
     }
 }
 
+/// Multiply transformation matrix by transformation matrix
 impl ops::Mul<Transform3h<f32>> for Transform3h<f32> {
     type Output = Transform3h<f32>;
 
@@ -206,6 +225,7 @@ impl ops::Mul<Transform3h<f32>> for Transform3h<f32> {
     }
 }
 
+/// Multiply transformation matrix by transformation matrix
 impl ops::Mul<Transform3h<f64>> for Transform3h<f64> {
     type Output = Transform3h<f64>;
 
@@ -224,6 +244,7 @@ impl ops::Mul<Transform3h<f64>> for Transform3h<f64> {
     }
 }
 
+/// Multiply transformation matrix reference by vector reference
 impl ops::Mul<&Vec3h<f32>> for &Transform3h<f32> {
     type Output = Vec3h<f32>;
 
@@ -237,6 +258,7 @@ impl ops::Mul<&Vec3h<f32>> for &Transform3h<f32> {
     }
 }
 
+/// Multiply transformation matrix reference by vector reference
 impl ops::Mul<&Vec3h<f64>> for &Transform3h<f64> {
     type Output = Vec3h<f64>;
 

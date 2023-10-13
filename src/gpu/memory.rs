@@ -1,3 +1,6 @@
+//! Behind-the-scenes brain of the gpu module.
+//! Handles GPU memory management for MemoryCalculator and QuickCalculator
+
 extern crate opencl3;
 
 use opencl3::command_queue::{
@@ -31,7 +34,6 @@ use crate::IsFloat;
 use crate::Result;
 
 use crate::linalg::Matrix;
-
 
 pub struct MemoryHandler<T: IsFloat + std::fmt::Debug + Copy + Clone> {
     context: Context, // OpenCL context

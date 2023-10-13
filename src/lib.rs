@@ -12,8 +12,10 @@ pub mod geogpu;
 
 pub use error::Jeeperr;
 
+/// Shorthand result type for gpurs.
 pub type Result<T> = result::Result<T, Jeeperr>;
 
+/// Trait allowing objects to be implemented for single or double precision floats
 pub trait IsFloat {}
 impl IsFloat for f32 {}
 impl IsFloat for f64 {}

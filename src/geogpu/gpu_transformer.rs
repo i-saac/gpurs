@@ -35,16 +35,18 @@ use crate::geo::{
     Transform3h
 };
 
+/// GPU Memory Manager for Mass Vector Transformations.
 pub struct GPUTransformer<T: IsFloat> {
     context: Context, // OpenCL context
     command_queue: CommandQueue, // OpenCL command queue
     kernels: Vec<Kernel>, // Vector of all compiled kernels
     write_buffers_3h: Vec<Buffer<T>>, // Vector of full write buffers
     last_write_event: Option<Event>, // Last write event object
-    transforms_3h: Vec<Transform3h<T>>
+    transforms_3h: Vec<Transform3h<T>> // Vector of loaded transforms
 }
 
 impl GPUTransformer<f32> {
+    /// Initialize GPUTransformer.
     pub fn init() -> Result<GPUTransformer<f32>> {
         // Get devices and create device object
         let device_id = *get_all_devices(CL_DEVICE_TYPE_GPU)?
@@ -82,9 +84,10 @@ impl GPUTransformer<f32> {
         // Create empty buffer vector
         let buffer_vector: Vec<Buffer<f32>> = Vec::with_capacity(super::INIT_MEMORY_CAPACITY);
 
+        // Create empty transform vector
         let stored_3h_vector: Vec<Transform3h<f32>> = Vec::default();
     
-        // Create and return new Memory Handler
+        // Create and return new GPUTrasnformer
         let output: GPUTransformer<f32> = GPUTransformer {
             context: context,
             command_queue: queue,
@@ -96,6 +99,7 @@ impl GPUTransformer<f32> {
         Ok(output)
     }
 
+    /// Store 3D Homogeneous transform.
     pub fn store_transform3h(&mut self, transform: Transform3h<f32>) -> Result<usize> {
         self.transforms_3h.push(transform.clone());
 
@@ -127,6 +131,7 @@ impl GPUTransformer<f32> {
         Ok(output_idx)
     }
 
+    /// Mass transform 3D Homogeneous vectors.
     pub fn mass_transform_3h(&mut self, transform_idx: usize, inputs: &[Vec3h<f32>]) -> Result<Vec<Vec3h<f32>>> {
         let kernel_idx: usize = 0;
 
@@ -229,6 +234,7 @@ impl GPUTransformer<f32> {
 
 
 impl GPUTransformer<f64> {
+    /// Initialize GPUTransformer.
     pub fn init() -> Result<GPUTransformer<f64>> {
         // Get devices and create device object
         let device_id = *get_all_devices(CL_DEVICE_TYPE_GPU)?
@@ -266,9 +272,10 @@ impl GPUTransformer<f64> {
         // Create empty buffer vector
         let buffer_vector: Vec<Buffer<f64>> = Vec::with_capacity(super::INIT_MEMORY_CAPACITY);
 
+        // Create empty transforma vector
         let stored_3h_vector: Vec<Transform3h<f64>> = Vec::default();
     
-        // Create and return new Memory Handler
+        // Create and return new GPUTransformer
         let output: GPUTransformer<f64> = GPUTransformer {
             context: context,
             command_queue: queue,
@@ -279,7 +286,8 @@ impl GPUTransformer<f64> {
         };
         Ok(output)
     }
-
+    
+    /// Store 3D Homogeneous transform.
     pub fn store_transform3h(&mut self, transform: Transform3h<f64>) -> Result<usize> {
         self.transforms_3h.push(transform.clone());
 
@@ -311,6 +319,7 @@ impl GPUTransformer<f64> {
         Ok(output_idx)
     }
 
+    /// Mass transform 3D Homogeneous vectors.
     pub fn mass_transform_3h(&mut self, transform_idx: usize, inputs: &[Vec3h<f64>]) -> Result<Vec<Vec3h<f64>>> {
         let kernel_idx: usize = 0;
 

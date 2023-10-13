@@ -1,9 +1,9 @@
-//! Calculator object allowing for GPU-accelerated matrix calculations
+//! Calculator object allowing for GPU-accelerated matrix calculations.
 //! 
 //! Does not store resultant matrices in GPU memory buffers and allows for
-//! temporary buffers to give more granular control over GPU memory
+//! temporary buffers to give more granular control over GPU memory.
 //! 
-//! Includes support for compilation and execution of custom kernels
+//! Includes support for compilation and execution of custom kernels.
 
 use crate::IsFloat;
 use crate::Result;
@@ -23,11 +23,12 @@ type ResultFunction<T> = Box<dyn Fn(
     Vec<usize>
 ) -> Result<Matrix<T>>>;
 
-/// Shortcut type definition for closure defining output parameters for custom kernel
-/// Inputs is a list of matrices, the output is a Result containing a tuple of the output rows, output cols, and work sizes
+/// Shortcut type definition for closure defining output parameters for custom kernel.
+/// Inputs are two lists of matrices (stored matrices, then temporary ones), 
+/// and the output is a Result containing a tuple of the output rows, output cols, and work sizes.
 pub type QuickParameterFunction<T> = Box<dyn Fn(Option<Vec<&Matrix<T>>>, Option<Vec<&Matrix<T>>>) -> Result<(usize, usize, Vec<usize>)>>;
 
-/// Wrapper that manages storage of matrices and custom kernels and manages calculation operations
+/// Wrapper that manages storage of matrices and custom kernels and manages calculation operations.
 pub struct QuickCalculator<T: IsFloat + std::fmt::Debug + Copy + Clone> {
     memory_handler: MemoryHandler<T>, // Memory handler
     matrices: Vec<Matrix<T>>, // Calculator memory vector
@@ -37,7 +38,7 @@ pub struct QuickCalculator<T: IsFloat + std::fmt::Debug + Copy + Clone> {
 }
 
 impl<T: IsFloat + std::fmt::Debug + Copy + Clone> QuickCalculator<T> {
-    /// Store matrix to calculator and gpu memory
+    /// Store matrix to calculator and gpu memory.
     pub fn store_matrix(&mut self, matrix: Matrix<T>) -> Result<usize> {
         // Store matrix to calculator memory
         self.matrices.push(matrix.clone());
@@ -56,7 +57,7 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> QuickCalculator<T> {
 }
 
 impl QuickCalculator<f32> {
-    /// Initializes Calculator struct
+    /// Initializes Calculator struct.
     pub fn init() -> Result<QuickCalculator<f32>> {
         // Initialize vector of kernel names
         let program_vec: Vec<&str> = super::PROGRAM_LIST_FLOAT.to_vec();
@@ -71,7 +72,7 @@ impl QuickCalculator<f32> {
         let params_customs_vector: Vec<QuickParameterFunction<f32>> = Vec::default();
         let custom_idcs_vector: Vec<usize> = Vec::default();
 
-        // Create and return new memory calculator
+        // Create and return new quick calculator
         let output: QuickCalculator<f32> = QuickCalculator {
             memory_handler: memory_handler,
             matrices: mat_vector,
@@ -82,7 +83,7 @@ impl QuickCalculator<f32> {
         Ok(output)
     }
 
-    /// Multiply previously stored Matrix and previously stored Matrix
+    /// Multiply previously stored Matrix and previously stored Matrix.
     pub fn mat_mul(&mut self, left_idx: usize, right_idx: usize) -> Result<Matrix<f32>> {
         let left: &Matrix<f32> = &self.matrices[left_idx];
         let right: &Matrix<f32> = &self.matrices[right_idx];
@@ -109,6 +110,7 @@ impl QuickCalculator<f32> {
         Ok(output)
     }
 
+    /// Multiply previously stored Matrix and non-stored Matrix.
     pub fn halfquick_mat_mul(&mut self, left_idx: usize, right: &Matrix<f32>) -> Result<Matrix<f32>> {
         let left: &Matrix<f32> = &self.matrices[left_idx];
 
@@ -134,7 +136,7 @@ impl QuickCalculator<f32> {
         Ok(output)
     }
 
-    /// Multiply non-stored Matrix and non-stored Matrix
+    /// Multiply non-stored Matrix and non-stored Matrix.
     pub fn quick_mat_mul(&mut self, left: &Matrix<f32>, right: &Matrix<f32>) -> Result<Matrix<f32>> {
         if left.get_cols() != right.get_rows() {
             return Err(Jeeperr::DimensionError)
@@ -158,7 +160,7 @@ impl QuickCalculator<f32> {
         Ok(output)
     }
 
-    /// Compile and store a custom kernel and build/store a closure to execute said kernel
+    /// Compile and store a custom kernel and build/store a closure to execute said kernel.
     pub unsafe fn load_custom_fn(
         &mut self,
         program_source: &str,
@@ -203,7 +205,7 @@ impl QuickCalculator<f32> {
         return Ok(self.customs.len() - 1);
     }
 
-    /// Execute custom kernel via pre-generated closure
+    /// Execute custom kernel via pre-generated closure.
     pub unsafe fn exec_custom_fn(
         &mut self,
         custom_index: usize,
@@ -245,7 +247,7 @@ impl QuickCalculator<f32> {
 }
 
 impl QuickCalculator<f64> {
-    /// Initializes Calculator struct
+    /// Initializes Calculator struct.
     pub fn init() -> Result<QuickCalculator<f64>> {
         // Initialize vector of kernel names
         let program_vec: Vec<&str> = super::PROGRAM_LIST_DOUBLE.to_vec();
@@ -260,7 +262,7 @@ impl QuickCalculator<f64> {
         let params_customs_vector: Vec<QuickParameterFunction<f64>> = Vec::default();
         let custom_idcs_vector: Vec<usize> = Vec::default();
 
-        // Create and return new memory calculator
+        // Create and return new quick calculator
         let output: QuickCalculator<f64> = QuickCalculator {
             memory_handler: memory_handler,
             matrices: mat_vector,
@@ -271,7 +273,7 @@ impl QuickCalculator<f64> {
         Ok(output)
     }
 
-    /// Multiply previously stored Matrix and previously stored Matrix
+    /// Multiply previously stored Matrix and previously stored Matrix.
     pub fn mat_mul(&mut self, left_idx: usize, right_idx: usize) -> Result<Matrix<f64>> {
         let left: &Matrix<f64> = &self.matrices[left_idx];
         let right: &Matrix<f64> = &self.matrices[right_idx];
@@ -298,6 +300,7 @@ impl QuickCalculator<f64> {
         Ok(output)
     }
 
+    /// Multiply previously stored Matrix and non-stored Matrix.
     pub fn halfquick_mat_mul(&mut self, left_idx: usize, right: &Matrix<f64>) -> Result<Matrix<f64>> {
         let left: &Matrix<f64> = &self.matrices[left_idx];
 
@@ -323,7 +326,7 @@ impl QuickCalculator<f64> {
         Ok(output)
     }
 
-    /// Multiply non-stored Matrix and non-stored Matrix
+    /// Multiply non-stored Matrix and non-stored Matrix.
     pub fn quick_mat_mul(&mut self, left: &Matrix<f64>, right: &Matrix<f64>) -> Result<Matrix<f64>> {
         if left.get_cols() != right.get_rows() {
             return Err(Jeeperr::DimensionError)
@@ -347,7 +350,7 @@ impl QuickCalculator<f64> {
         Ok(output)
     }
 
-    /// Compile and store a custom kernel and build/store a closure to execute said kernel
+    /// Compile and store a custom kernel and build/store a closure to execute said kernel.
     pub unsafe fn load_custom_fn(
         &mut self,
         program_source: &str,
@@ -392,7 +395,7 @@ impl QuickCalculator<f64> {
         return Ok(self.customs.len() - 1);
     }
 
-    /// Execute custom kernel via pre-generated closure
+    /// Execute custom kernel via pre-generated closure.
     pub unsafe fn exec_custom_fn(
         &mut self,
         custom_index: usize,

@@ -1,11 +1,13 @@
+//! Module for GPU-based mass vector transformation.
+
 mod gpu_transformer;
 
 pub use gpu_transformer::GPUTransformer;
 
-/// Default amount of memory slots for matrices in MemoryHandler and Calculator
+// Default amount of memory slots for transformations in GPUTransformer.
 const INIT_MEMORY_CAPACITY: usize = 3;
 
-/// List of default kernel names
+// List of default kernel names.
 const PROGRAM_LIST_FLOAT: [&str; 1] = [
     "bulk_transform"
 ];
@@ -13,7 +15,7 @@ const PROGRAM_LIST_DOUBLE: [&str; 1] = [
     "bulk_transform"
 ];
 
-/// Source code for default kernels
+// Source code for default kernels.
 const PROGRAM_SOURCE_FLOAT: &str = r#"
 kernel void bulk_transform (
     global float* output,
