@@ -1,4 +1,6 @@
 mod matrix;
-pub mod utils;
+mod utils;
 
 pub use matrix::Matrix;
+pub use utils::Axis;
+pub use utils::MatrixUtilities;
