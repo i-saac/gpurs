@@ -3,15 +3,17 @@ use gpurs::geo::{
     Transform3h
 };
 
+type P = f32;
+
 #[test]
 fn transform_test() {
-    let i_vec: Vec3h<f32> = Vec3h::<f32>::i();
+    let i_vec: Vec3h<P> = Vec3h::<P>::i();
 
-    let rotate: Transform3h<f32> = Transform3h::<f32>::rotation_z(std::f32::consts::PI / 2.0);
-    let scale: Transform3h<f32> = Transform3h::<f32>::scale(2.0);
-    let translate: Transform3h<f32> = Transform3h::<f32>::translate(-1.0, 0.0, 1.0);
+    let rotate: Transform3h<P> = Transform3h::<P>::rotation_z(std::f64::consts::PI as P / 2.0);
+    let scale: Transform3h<P> = Transform3h::<P>::scale(2.0);
+    let translate: Transform3h<P> = Transform3h::<P>::translate(-1.0, 0.0, 1.0);
 
-    let transform: Transform3h<f32> = translate * (scale * rotate);
+    let transform: Transform3h<P> = translate * (scale * rotate);
 
     println!("{:?}", &transform * &i_vec);
 }
