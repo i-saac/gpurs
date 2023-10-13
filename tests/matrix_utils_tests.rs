@@ -1,11 +1,12 @@
+mod test_parameters;
+use test_parameters::P;
+
 use gpurs::Result;
 use gpurs::linalg::{
     Matrix,
     MatrixUtilities,
     Axis
 };
-
-type P = f32;
 
 #[test]
 fn linear_solve_test() -> Result<()> {

@@ -1,5 +1,8 @@
 #![cfg(feature = "gpu_accel")]
 
+mod test_parameters;
+use test_parameters::P;
+
 use gpurs::Result;
 use gpurs::Jeeperr;
 use gpurs::linalg::Matrix;
@@ -7,8 +10,6 @@ use gpurs::gpu::{
     QuickCalculator,
     QuickParameterFunction
 };
-
-type P = f32;
 
 #[test]
 fn memory_gpu_matmul_test() -> Result<()> {
@@ -44,24 +45,47 @@ fn memory_gpu_matmul_test() -> Result<()> {
 fn quick_custom_kernel_test() -> Result<()> {
     let mut calc: QuickCalculator<P> = QuickCalculator::<P>::init()?;
 
-    let new_program: &str = r#"
-    kernel void ax_plus_b (
-        global float* c,
-        const int N,
-        const global float* a,
-        const global float* b,
-        const global float* x
-    ) {
-        const int globalOutputIdx = get_global_id(0);
-    
-        float interm = 0.0f;
-        for (int k = 0; k < N; k++) {
-            interm += a[globalOutputIdx * N + k] * x[k];
+    let new_program: &str;
+    if std::any::TypeId::of::<P>() == std::any::TypeId::of::<f32>() {
+        new_program = r#"
+        kernel void ax_plus_b (
+            global float* c,
+            const int N,
+            const global float* a,
+            const global float* b,
+            const global float* x
+        ) {
+            const int globalOutputIdx = get_global_id(0);
+        
+            float interm = 0.0f;
+            for (int k = 0; k < N; k++) {
+                interm += a[globalOutputIdx * N + k] * x[k];
+            }
+        
+            c[globalOutputIdx] = interm + b[globalOutputIdx];
         }
-    
-        c[globalOutputIdx] = interm + b[globalOutputIdx];
+        "#;
     }
-    "#;
+    else {
+        new_program = r#"
+        kernel void ax_plus_b (
+            global double* c,
+            const int N,
+            const global double* a,
+            const global double* b,
+            const global double* x
+        ) {
+            const int globalOutputIdx = get_global_id(0);
+        
+            double interm = 0.0f;
+            for (int k = 0; k < N; k++) {
+                interm += a[globalOutputIdx * N + k] * x[k];
+            }
+        
+            c[globalOutputIdx] = interm + b[globalOutputIdx];
+        }
+        "#;
+    }
 
     let new_kernel_name: &str = "ax_plus_b";
 

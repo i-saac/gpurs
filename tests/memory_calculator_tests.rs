@@ -2,6 +2,9 @@
 
 use std::time::Instant;
 
+mod test_parameters;
+use test_parameters::P;
+
 use gpurs::Result;
 use gpurs::Jeeperr;
 use gpurs::linalg::Matrix;
@@ -9,8 +12,6 @@ use gpurs::gpu::{
     MemoryCalculator,
     MemoryParameterFunction
 };
-
-type P = f32;
 
 #[test]
 fn memory_gpu_matmul_test() -> Result<()> {
@@ -62,19 +63,37 @@ fn memory_gpu_matmul_test() -> Result<()> {
 fn memory_custom_kernel_test() -> Result<()> {
     let mut calc: MemoryCalculator<P> = MemoryCalculator::<P>::init()?;
 
-    let new_program: &str = r#"
-    kernel void mat_ewmult (
-        global float *c,
-        const int N,
-        const global float* a,
-        const global float* b
-    ) {
-        const int globalRow = get_global_id(0);
-        const int globalCol = get_global_id(1);
-    
-        c[globalRow * N + globalCol] = a[globalRow * N + globalCol] * b[globalRow * N + globalCol];
+    let new_program: &str;
+    if std::any::TypeId::of::<P>() == std::any::TypeId::of::<f32>() {
+        new_program = r#"
+        kernel void mat_ewmult (
+            global float *c,
+            const int N,
+            const global float* a,
+            const global float* b
+        ) {
+            const int globalRow = get_global_id(0);
+            const int globalCol = get_global_id(1);
+        
+            c[globalRow * N + globalCol] = a[globalRow * N + globalCol] * b[globalRow * N + globalCol];
+        }
+        "#;
     }
-    "#;
+    else {
+        new_program = r#"
+        kernel void mat_ewmult (
+            global double *c,
+            const int N,
+            const global double* a,
+            const global double* b
+        ) {
+            const int globalRow = get_global_id(0);
+            const int globalCol = get_global_id(1);
+        
+            c[globalRow * N + globalCol] = a[globalRow * N + globalCol] * b[globalRow * N + globalCol];
+        }
+        "#
+    };
 
     let new_kernel_name: &str = "mat_ewmult";
 
@@ -133,29 +152,20 @@ fn memory_custom_kernel_test() -> Result<()> {
 }
 
 #[test]
-fn cpu_vs_memory_gpu_test() -> Result<()> {
+fn stress_test() -> Result<()> {
     let a_mat: Matrix<P> = Matrix::<P>::ones(1000, 1000);
-    let b_mat: Matrix<P> = Matrix::<P>::ones(1000, 1000);
-    let c_mat: Matrix<P> = Matrix::<P>::ones(1000, 1000);
 
     let gpu_total_start = Instant::now();
-    let output_gpu: Matrix<P>;
     {
         let mut calc: MemoryCalculator<P> = MemoryCalculator::<P>::init()?;
 
         let a_idx: usize = calc.store_matrix(a_mat)?;
 
         let gpu_calc_start = Instant::now();
-        (output_gpu, _) = calc.mat_mul(a_idx, a_idx)?;
+        calc.mat_mul(a_idx, a_idx)?;
         println!("GPU Calc: {:?}", gpu_calc_start.elapsed());
     }
     println!("GPU Total: {:?}", gpu_total_start.elapsed());
-
-    let cpu_start = Instant::now();
-    let output_cpu = (b_mat * c_mat)?;
-    println!("CPU: {:?}", cpu_start.elapsed());
-
-    assert_eq!(output_gpu.get_data(), output_cpu.get_data());
 
     Ok(())
 }

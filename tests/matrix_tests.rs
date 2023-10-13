@@ -1,7 +1,8 @@
+mod test_parameters;
+use test_parameters::P;
+
 use gpurs::Result;
 use gpurs::linalg::Matrix;
-
-type P = f32;
 
 #[test]
 fn indexing_tests() -> Result<()> {

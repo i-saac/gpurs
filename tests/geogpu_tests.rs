@@ -2,14 +2,15 @@
 
 use std::time::Instant;
 
+mod test_parameters;
+use test_parameters::P;
+
 use gpurs::Result;
 use gpurs::geo::{
     Vec3h,
     Transform3h
 };
 use gpurs::geogpu::GPUTransformer;
-
-type P = f32;
 
 #[test]
 fn stress_test() -> Result<()> {
