@@ -167,9 +167,13 @@ impl GPUTransformer<f32> {
             )?
         };
 
-        let input_vectors_flattened: Vec<f32> = (0..n_inputs).into_iter()
-            .flat_map(|idx| [inputs[idx].x, inputs[idx].y, inputs[idx].z, inputs[idx].w])
-            .collect::<Vec<f32>>();
+        let mut input_vectors_flattened: Vec<f32> = Vec::with_capacity(n_inputs);
+        for idx in 0..n_inputs {
+            input_vectors_flattened.push(inputs[idx].x);
+            input_vectors_flattened.push(inputs[idx].y);
+            input_vectors_flattened.push(inputs[idx].z);
+            input_vectors_flattened.push(inputs[idx].w);
+        }
 
         // Write matrix to buffer and store event
         let last_write_event: Event = unsafe {
@@ -209,13 +213,15 @@ impl GPUTransformer<f32> {
 
         self.last_write_event = Some(kernel_event);
 
-        let outputs: Vec<Vec3h<f32>> = output_data.chunks(4)
-            .map(|chunk| Vec3h {
-                x: chunk[0],
-                y: chunk[1],
-                z: chunk[2],
-                w: chunk[3],
-            }).collect::<Vec<Vec3h<f32>>>();
+        let mut outputs: Vec<Vec3h<f32>> = Vec::with_capacity(n_inputs);
+        for idx in 0..n_inputs {
+            outputs.push(Vec3h {
+                x: output_data[idx * 4 + 0],
+                y: output_data[idx * 4 + 1],
+                z: output_data[idx * 4 + 2],
+                w: output_data[idx * 4 + 3],
+            });
+        }
 
         Ok(outputs)
     }
@@ -345,9 +351,13 @@ impl GPUTransformer<f64> {
             )?
         };
 
-        let input_vectors_flattened: Vec<f64> = (0..n_inputs).into_iter()
-            .flat_map(|idx| [inputs[idx].x, inputs[idx].y, inputs[idx].z, inputs[idx].w])
-            .collect::<Vec<f64>>();
+        let mut input_vectors_flattened: Vec<f64> = Vec::with_capacity(n_inputs);
+        for idx in 0..n_inputs {
+            input_vectors_flattened.push(inputs[idx].x);
+            input_vectors_flattened.push(inputs[idx].y);
+            input_vectors_flattened.push(inputs[idx].z);
+            input_vectors_flattened.push(inputs[idx].w);
+        }
 
         // Write matrix to buffer and store event
         let last_write_event: Event = unsafe {
@@ -387,13 +397,15 @@ impl GPUTransformer<f64> {
 
         self.last_write_event = Some(kernel_event);
 
-        let outputs: Vec<Vec3h<f64>> = output_data.chunks(4)
-            .map(|chunk| Vec3h {
-                x: chunk[0],
-                y: chunk[1],
-                z: chunk[2],
-                w: chunk[3],
-            }).collect::<Vec<Vec3h<f64>>>();
+        let mut outputs: Vec<Vec3h<f64>> = Vec::with_capacity(n_inputs);
+        for idx in 0..n_inputs {
+            outputs.push(Vec3h {
+                x: output_data[idx * 4 + 0],
+                y: output_data[idx * 4 + 1],
+                z: output_data[idx * 4 + 2],
+                w: output_data[idx * 4 + 3],
+            });
+        }
     
         Ok(outputs)
     }
