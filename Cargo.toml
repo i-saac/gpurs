@@ -8,6 +8,8 @@ homepage = "https://github.com/i-saac/gpurs"
 repository = "https://github.com/i-saac/gpurs"
 documentation = "https://github.com/i-saac/gpurs/wiki"
 license = "Apache-2.0"
+keywords = ["opencl", "gpu", "matrix", "geometry", "vector"]
+categories = ["science", "mathematics", "concurrency", "hardware-support", "memory-management"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
