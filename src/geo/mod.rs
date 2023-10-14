@@ -1,3 +1,5 @@
+//! Module containing objects for geometric vectors and transforms.
+
 mod transform3h;
 mod vec3h;
 
