@@ -137,11 +137,11 @@ impl GPUTransformer<f32> {
 
         let n_inputs: usize = inputs.len();
 
-        let read_buffer: Buffer<f32> = unsafe {
-            Buffer::<f32>::create(
+        let read_buffer: Buffer<Vec3h<f32>> = unsafe {
+            Buffer::<Vec3h<f32>>::create(
                 &self.context,
                 CL_MEM_WRITE_ONLY,
-                4 * n_inputs,
+                n_inputs,
                 ptr::null_mut()
             )?
         };
@@ -149,7 +149,7 @@ impl GPUTransformer<f32> {
         let mut exec_kernel: ExecuteKernel = ExecuteKernel::new(&self.kernels[kernel_idx]);
         let mut events: Vec<cl_event> = Vec::default();
 
-        let mut output_data: Vec<f32> = vec![0.0; 4 * n_inputs];
+        let mut output_data: Vec<Vec3h<f32>> = vec![Vec3h::<f32>::i(); n_inputs];
 
         let mut kernel_mid_exec: &mut ExecuteKernel = unsafe {
             exec_kernel.set_arg(&read_buffer)
@@ -163,22 +163,14 @@ impl GPUTransformer<f32> {
             kernel_mid_exec.set_arg(&self.write_buffers_3h[transform_idx])
         };
 
-        let mut temp_write_buffer: Buffer<f32> = unsafe {
-            Buffer::<f32>::create(
+        let mut temp_write_buffer: Buffer<Vec3h<f32>> = unsafe {
+            Buffer::<Vec3h<f32>>::create(
                 &self.context,
                 CL_MEM_READ_ONLY,
-                4 * n_inputs,
+                n_inputs,
                 ptr::null_mut()
             )?
         };
-
-        let mut input_vectors_flattened: Vec<f32> = Vec::with_capacity(n_inputs);
-        for idx in 0..n_inputs {
-            input_vectors_flattened.push(inputs[idx].x);
-            input_vectors_flattened.push(inputs[idx].y);
-            input_vectors_flattened.push(inputs[idx].z);
-            input_vectors_flattened.push(inputs[idx].w);
-        }
 
         // Write matrix to buffer and store event
         let last_write_event: Event = unsafe {
@@ -186,7 +178,7 @@ impl GPUTransformer<f32> {
                 &mut temp_write_buffer,
                 CL_NON_BLOCKING,
                 0,
-                &input_vectors_flattened,
+                &inputs,
                 &[]
             )?
         };
@@ -218,17 +210,7 @@ impl GPUTransformer<f32> {
 
         self.last_write_event = Some(kernel_event);
 
-        let mut outputs: Vec<Vec3h<f32>> = Vec::with_capacity(n_inputs);
-        for idx in 0..n_inputs {
-            outputs.push(Vec3h {
-                x: output_data[idx * 4 + 0],
-                y: output_data[idx * 4 + 1],
-                z: output_data[idx * 4 + 2],
-                w: output_data[idx * 4 + 3],
-            });
-        }
-
-        Ok(outputs)
+        Ok(output_data)
     }
 }
 
@@ -325,11 +307,11 @@ impl GPUTransformer<f64> {
 
         let n_inputs: usize = inputs.len();
 
-        let read_buffer: Buffer<f64> = unsafe {
-            Buffer::<f64>::create(
+        let read_buffer: Buffer<Vec3h<f64>> = unsafe {
+            Buffer::<Vec3h<f64>>::create(
                 &self.context,
                 CL_MEM_WRITE_ONLY,
-                4 * n_inputs,
+                n_inputs,
                 ptr::null_mut()
             )?
         };
@@ -337,7 +319,7 @@ impl GPUTransformer<f64> {
         let mut exec_kernel: ExecuteKernel = ExecuteKernel::new(&self.kernels[kernel_idx]);
         let mut events: Vec<cl_event> = Vec::default();
 
-        let mut output_data: Vec<f64> = vec![0.0; 4 * n_inputs];
+        let mut output_data: Vec<Vec3h<f64>> = vec![Vec3h::<f64>::i(); n_inputs];
 
         let mut kernel_mid_exec: &mut ExecuteKernel = unsafe {
             exec_kernel.set_arg(&read_buffer)
@@ -351,22 +333,14 @@ impl GPUTransformer<f64> {
             kernel_mid_exec.set_arg(&self.write_buffers_3h[transform_idx])
         };
 
-        let mut temp_write_buffer: Buffer<f64> = unsafe {
-            Buffer::<f64>::create(
+        let mut temp_write_buffer: Buffer<Vec3h<f64>> = unsafe {
+            Buffer::<Vec3h<f64>>::create(
                 &self.context,
                 CL_MEM_READ_ONLY,
-                4 * n_inputs,
+                n_inputs,
                 ptr::null_mut()
             )?
         };
-
-        let mut input_vectors_flattened: Vec<f64> = Vec::with_capacity(n_inputs);
-        for idx in 0..n_inputs {
-            input_vectors_flattened.push(inputs[idx].x);
-            input_vectors_flattened.push(inputs[idx].y);
-            input_vectors_flattened.push(inputs[idx].z);
-            input_vectors_flattened.push(inputs[idx].w);
-        }
 
         // Write matrix to buffer and store event
         let last_write_event: Event = unsafe {
@@ -374,7 +348,7 @@ impl GPUTransformer<f64> {
                 &mut temp_write_buffer,
                 CL_NON_BLOCKING,
                 0,
-                &input_vectors_flattened,
+                &inputs,
                 &[]
             )?
         };
@@ -406,16 +380,6 @@ impl GPUTransformer<f64> {
 
         self.last_write_event = Some(kernel_event);
 
-        let mut outputs: Vec<Vec3h<f64>> = Vec::with_capacity(n_inputs);
-        for idx in 0..n_inputs {
-            outputs.push(Vec3h {
-                x: output_data[idx * 4 + 0],
-                y: output_data[idx * 4 + 1],
-                z: output_data[idx * 4 + 2],
-                w: output_data[idx * 4 + 3],
-            });
-        }
-    
-        Ok(outputs)
+        Ok(output_data)
     }
 }

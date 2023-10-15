@@ -22,13 +22,18 @@ fn stress_test() -> Result<()> {
 
     let transform: Transform3h<P> = translate * (scale * rotate);
 
+    let cpu_sample: Vec3h<P> = &transform * &Vec3h::<P>::i();
+
     let mut transformer: GPUTransformer<P> = GPUTransformer::<P>::init()?;
 
     let transform_idx: usize = transformer.store_transform3h(transform)?;
 
     let transform_start = Instant::now();
-    let _ = transformer.mass_transform_3h(transform_idx, &test_vectors)?;
+    let transformed_vecs: Vec<Vec3h<P>> = transformer.mass_transform_3h(transform_idx, &test_vectors)?;
     println!("Transformation Time: {:?}", transform_start.elapsed());
+
+    println!("GPU Sample: {:?}", transformed_vecs[3]);
+    println!("CPU Sample: {:?}", cpu_sample);
 
     Ok(())
 }
