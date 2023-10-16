@@ -5,8 +5,10 @@ use crate::linalg::Matrix;
 
 /// Axis enum for use in utility functions.
 pub enum Axis {
+    /// Perform action along row dimension
     Row,
-    Col
+    /// Perform action along col dimension
+    Col,
 }
 
 /// Traint containing utility functions for the Matrix struct.

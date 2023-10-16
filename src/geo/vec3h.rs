@@ -5,10 +5,14 @@ use crate::IsFloat;
 /// Vector for 3D Homogeneous Coordinates.
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3h<T: IsFloat> {
+    /// X component of vector
     pub x: T,
+    /// Y component of vector
     pub y: T,
+    /// Z component of vector
     pub z: T,
-    pub w: T
+    /// W component (usually 1, used for translation)
+    pub w: T,
 }
 
 impl Vec3h<f32> {
