@@ -16,5 +16,5 @@ Welcome to gpurs (pronounced "Jeepers!"), a general-purpose linear algebra toolk
 
 ## Documentation
 
-- [GitHub Wiki](https://github.com/i-saac/gpurs/wiki) (More exhaustive/in depth for specific functionality with examples)
-- [RustDocs](https://docs.rs/gpurs/) (More surface level, but has descriptions of most functions)
+- [GitHub Wiki](https://github.com/i-saac/gpurs/wiki) (Deep dives into specific functionality with examples)
+- [RustDocs](https://docs.rs/gpurs/) (Has descriptions of most functions with example code)
