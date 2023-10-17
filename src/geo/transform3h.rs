@@ -18,6 +18,8 @@ impl<T: IsFloat> Transform3h<T> {
 
 impl Transform3h<f32> {
     /// Return identity matrix.
+    /// 
+    /// This transform keeps every vector the same.
     pub fn identity() -> Transform3h<f32> {
         Transform3h { data: [
             1.0, 0.0, 0.0, 0.0,
@@ -28,6 +30,8 @@ impl Transform3h<f32> {
     }
 
     /// Return scaling matrix.
+    /// 
+    /// This transform scales the x, y, and z components of each vector by the provided factor.
     pub fn scale(factor: f32) -> Transform3h<f32> {
         Transform3h { data: [
             factor, 0.0, 0.0, 0.0,
@@ -37,7 +41,84 @@ impl Transform3h<f32> {
         ] }
     }
 
+    /// Return stretching matrix.
+    /// 
+    /// This transform scales the x components of each vector by the provided factor but leaves the y and z components intact.
+    pub fn stretch_x(factor: f32) -> Transform3h<f32> {
+        Transform3h { data: [
+            factor, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ] }
+    }
+
+    /// Return stretching matrix.
+    /// 
+    /// This transform scales the y components of each vector by the provided factor but leaves the x and z components intact.
+    pub fn stretch_y(factor: f32) -> Transform3h<f32> {
+        Transform3h { data: [
+            1.0, 0.0, 0.0, 0.0,
+            0.0, factor, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ] }
+    }
+
+    /// Return stretching matrix.
+    /// 
+    /// This transform scales the z components of each vector by the provided factor but leaves the x and y components intact.
+    pub fn stretch_z(factor: f32) -> Transform3h<f32> {
+        Transform3h { data: [
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, factor, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ] }
+    }
+
+    /// Return skew matrix.
+    /// 
+    /// This transform skews the vector along the x axis, 
+    /// changing the value proportionally to the y and z values according to the provided factors.
+    pub fn skew_x(y_factor: f32, z_factor: f32) -> Transform3h<f32> {
+        Transform3h { data: [
+            1.0, y_factor, z_factor, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ] }
+    }
+
+    /// Return skew matrix.
+    /// 
+    /// This transform skews the vector along the y axis,
+    /// changing the value proportionally to the x and z values according to the provided factors.
+    pub fn skew_y(x_factor: f32, z_factor: f32) -> Transform3h<f32> {
+        Transform3h { data: [
+            1.0, 0.0, 0.0, 0.0,
+            x_factor, 1.0, z_factor, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ] }
+    }
+
+    /// Return skew matrix.
+    /// 
+    /// This transform skews the vector along the z axis,
+    /// changing the value proportionally to the x and y values according to the provided factors.
+    pub fn skew_z(x_factor: f32, y_factor: f32) -> Transform3h<f32> {
+        Transform3h { data: [
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            x_factor, y_factor, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ] }
+    }
+
     /// Return translation matrix.
+    /// 
+    /// This transform translates the vector in 3D space by the given deltas.
     pub fn translate(delta_x: f32, delta_y: f32, delta_z: f32) -> Transform3h<f32> {
         Transform3h { data: [
             1.0, 0.0, 0.0, delta_x,
@@ -48,6 +129,8 @@ impl Transform3h<f32> {
     }
 
     /// Return rotation matrix about x axis.
+    /// 
+    /// This transform rotates the vector about the x axis by theta radians.
     pub fn rotation_x(theta_x: f32) -> Transform3h<f32> {
         Transform3h { data: [
             1.0, 0.0, 0.0, 0.0,
@@ -58,6 +141,8 @@ impl Transform3h<f32> {
     }
 
     /// Return rotation matrix about y axis.
+    /// 
+    /// This transform rotates the vector about the y axis by theta radians.
     pub fn rotation_y(theta_y: f32) -> Transform3h<f32> {
         Transform3h { data: [
             theta_y.cos(), 0.0, theta_y.sin(), 0.0,
@@ -68,6 +153,8 @@ impl Transform3h<f32> {
     }
 
     /// Return rotation matrix about z axis.
+    /// 
+    /// This transform rotates the vector about the z axis by theta radians.
     pub fn rotation_z(theta_z: f32) -> Transform3h<f32> {
         Transform3h { data: [
             theta_z.cos(), -theta_z.sin(), 0.0, 0.0,
@@ -78,6 +165,8 @@ impl Transform3h<f32> {
     }
 
     /// Return rotation matrix about arbitrary axis. Assumes axis components are of unit vector.
+    /// 
+    /// This transform rotates the vector about a specified unit axis by theta radians.
     pub fn rotation_arbitrary(axis_x: f32, axis_y: f32, axis_z: f32, theta: f32) -> Transform3h<f32> {
         let ct: f32 = theta.cos();
         let st: f32 = theta.sin();
@@ -105,6 +194,8 @@ impl Transform3h<f32> {
 
 impl Transform3h<f64> {
     /// Return identity matrix.
+    /// 
+    /// This transform keeps every vector the same.
     pub fn identity() -> Transform3h<f64> {
         Transform3h { data: [
             1.0, 0.0, 0.0, 0.0,
@@ -115,6 +206,8 @@ impl Transform3h<f64> {
     }
 
     /// Return scaling matrix.
+    /// 
+    /// This transform scales the x, y, and z components of each vector by the provided factor.
     pub fn scale(factor: f64) -> Transform3h<f64> {
         Transform3h { data: [
             factor, 0.0, 0.0, 0.0,
@@ -124,7 +217,84 @@ impl Transform3h<f64> {
         ] }
     }
 
+    /// Return stretching matrix.
+    /// 
+    /// This transform scales the x components of each vector by the provided factor but leaves the y and z components intact.
+    pub fn stretch_x(factor: f64) -> Transform3h<f64> {
+        Transform3h { data: [
+            factor, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ] }
+    }
+
+    /// Return stretching matrix.
+    /// 
+    /// This transform scales the y components of each vector by the provided factor but leaves the x and z components intact.
+    pub fn stretch_y(factor: f64) -> Transform3h<f64> {
+        Transform3h { data: [
+            1.0, 0.0, 0.0, 0.0,
+            0.0, factor, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ] }
+    }
+
+    /// Return stretching matrix.
+    /// 
+    /// This transform scales the z components of each vector by the provided factor but leaves the x and y components intact.
+    pub fn stretch_z(factor: f64) -> Transform3h<f64> {
+        Transform3h { data: [
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, factor, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ] }
+    }
+
+    /// Return skew matrix.
+    /// 
+    /// This transform skews the vector along the x axis,
+    /// changing the value proportionally to the y and z values according to the provided factors.
+    pub fn skew_x(y_factor: f64, z_factor: f64) -> Transform3h<f64> {
+        Transform3h { data: [
+            1.0, y_factor, z_factor, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ] }
+    }
+
+    /// Return skew matrix.
+    /// 
+    /// This transform skews the vector along the y axis,
+    /// changing the value proportionally to the x and z values according to the provided factors.
+    pub fn skew_y(x_factor: f64, z_factor: f64) -> Transform3h<f64> {
+        Transform3h { data: [
+            1.0, 0.0, 0.0, 0.0,
+            x_factor, 1.0, z_factor, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ] }
+    }
+
+    /// Return skew matrix.
+    /// 
+    /// This transform skews the vector along the z axis,
+    /// changing the value proportionally to the x and y values according to the provided factors.
+    pub fn skew_z(x_factor: f64, y_factor: f64) -> Transform3h<f64> {
+        Transform3h { data: [
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            x_factor, y_factor, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ] }
+    }
+
     /// Return translation matrix.
+    /// 
+    /// This transform translates the vector in 3D space by the given deltas.
     pub fn translate(delta_x: f64, delta_y: f64, delta_z: f64) -> Transform3h<f64> {
         Transform3h { data: [
             1.0, 0.0, 0.0, delta_x,
@@ -135,6 +305,8 @@ impl Transform3h<f64> {
     }
 
     /// Return rotation matrix about x axis.
+    /// 
+    /// This transform rotates the vector about the x axis by theta radians.
     pub fn rotation_x(theta_x: f64) -> Transform3h<f64> {
         Transform3h { data: [
             1.0, 0.0, 0.0, 0.0,
@@ -145,6 +317,8 @@ impl Transform3h<f64> {
     }
 
     /// Return rotation matrix about y axis.
+    /// 
+    /// This transform rotates the vector about the y axis by theta radians.
     pub fn rotation_y(theta_y: f64) -> Transform3h<f64> {
         Transform3h { data: [
             theta_y.cos(), 0.0, theta_y.sin(), 0.0,
@@ -155,6 +329,8 @@ impl Transform3h<f64> {
     }
 
     /// Return rotation matrix about z axis.
+    /// 
+    /// This transform rotates the vector about the z axis by theta radians.
     pub fn rotation_z(theta_z: f64) -> Transform3h<f64> {
         Transform3h { data: [
             theta_z.cos(), -theta_z.sin(), 0.0, 0.0,
@@ -165,6 +341,8 @@ impl Transform3h<f64> {
     }
 
     /// Return rotation matrix about arbitrary axis. Assumes axis components are of unit vector.
+    /// 
+    /// This transform rotates the vector about a specified unit axis by theta radians.
     pub fn rotation_arbitrary(axis_x: f64, axis_y: f64, axis_z: f64, theta: f64) -> Transform3h<f64> {
         let ct: f64 = theta.cos();
         let st: f64 = theta.sin();
