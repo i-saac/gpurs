@@ -324,6 +324,12 @@ impl Matrix<f32> {
 
         Ok(Matrix { data: ewmult_data, rows: self.rows, cols: self.cols })
     }
+
+    /// Returns index of flattened array.
+    /// Shorthand for matrix.get_data()[linear_index].
+    pub fn lindex(&self, linear_index: usize) -> f32 {
+        self.data[linear_index]
+    }
 }
 
 impl Matrix<f64> {
@@ -400,6 +406,12 @@ impl Matrix<f64> {
         }
 
         Ok(Matrix { data: ewmult_data, rows: self.rows, cols: self.cols })
+    }
+
+    /// Returns index of flattened array.
+    /// Shorthand for matrix.get_data()[linear_index].
+    pub fn lindex(&self, linear_index: usize) -> f64 {
+        self.data[linear_index]
     }
 }
 
