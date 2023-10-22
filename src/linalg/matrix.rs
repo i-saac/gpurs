@@ -35,9 +35,17 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
         return self.rows
     }
 
+    pub fn all_rows(&self) -> RowMatIter<T> {
+        return RowMatIter { row: 0, mat: self.clone() }
+    }
+
     /// Get number of cols in matrix.
     pub fn get_cols(&self) -> usize {
         return self.cols
+    }
+
+    pub fn all_cols(&self) -> ColMatIter<T> {
+        return ColMatIter { col: 0, mat: self.clone() }
     }
 
     /// Get matrix data in slice form.
@@ -542,15 +550,56 @@ impl ops::Mul<Matrix<f64>> for Matrix<f64> {
 /// Print Matrix in a readable way.
 impl<T: IsFloat + std::fmt::Debug + Copy + Clone> std::fmt::Display for Matrix<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        writeln!(f, "[{:?}", self.row_vec(0).unwrap())?;
-        for row_idx in 1..self.rows {
-            write!(f, " {:?}", self.row_vec(row_idx).unwrap())?;
-            if row_idx < self.rows - 1 {
-                write!(f, "\n")?;
+        write!(f, "[{:?}", self.row_vec(0).unwrap())?;
+        if self.rows > 1 {
+            writeln!(f, "")?;
+            for row_idx in 1..self.rows {
+                write!(f, " {:?}", self.row_vec(row_idx).unwrap())?;
+                if row_idx < self.rows - 1 {
+                    write!(f, "\n")?;
+                }
             }
         }
         writeln!(f, "]")?;
 
         Ok(())
+    }
+}
+
+pub struct RowMatIter<T: IsFloat + std::fmt::Debug + Copy + Clone> {
+    row: usize,
+    mat: Matrix<T>
+}
+
+impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Iterator for RowMatIter<T> {
+    type Item = Matrix<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row < self.mat.get_rows() {
+            self.row += 1;
+
+            return Some(self.mat.row_matrix(self.row - 1).unwrap());
+        }
+        
+        return None;
+    }
+}
+
+pub struct ColMatIter<T: IsFloat + std::fmt::Debug + Copy + Clone> {
+    col: usize,
+    mat: Matrix<T>
+}
+
+impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Iterator for ColMatIter<T> {
+    type Item = Matrix<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.col < self.mat.get_cols() {
+            self.col += 1;
+
+            return Some(self.mat.col_matrix(self.col - 1).unwrap());
+        }
+        
+        return None;
     }
 }
