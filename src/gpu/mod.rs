@@ -1,4 +1,16 @@
 //! Module for GPU Acceleration of Linear Algebra operations.
+//! 
+//! gpurs provides two main objects for GPU acceleration: MemoryCalculator and QuickCalculator.
+//! 
+//! - MemoryCalculator requires all inputs to be stored in memory ahead of time, and keeps all outputs stored for future use.
+//! This approach is less memory efficient, but can be faster if you plan to chain together a lot of operations.
+//! 
+//! - QuickCalculator allows inputs to be pre-stored in memory, but also accepts matrices directly for certain function calls.
+//! QuickCalculator does not keep outputs stored for future use. This approach is more memory efficient and is much better if you
+//! don't necessarily want to keep all of your inputs/outputs stored in GPU memory for the entire lifetime of the calculator.
+//! 
+//! These objects also allow custom kernels to be added to their own internal memory, so you can take advantage of gpurs' built-in
+//! kernel compilation and memory management for your own kernels.
 
 mod memory;
 mod memory_calculator;

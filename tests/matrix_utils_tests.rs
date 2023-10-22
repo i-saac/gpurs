@@ -5,7 +5,8 @@ use gpurs::Result;
 use gpurs::linalg::{
     Matrix,
     MatrixUtilities,
-    Axis
+    Axis,
+    ReferenceOperations
 };
 
 #[test]
@@ -66,6 +67,41 @@ fn concatenation_test() -> Result<()> {
     assert_eq!(col_concat.get_cols(), 6, "Col concatenation col dimension not as expected");
 
     println!("{}", col_concat);
+
+    Ok(())
+}
+
+#[test]
+fn ref_ops() -> Result<()> {
+    let a_vec: Vec<P> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+    let b_vec: Vec<P> = vec![2.0, 1.0, 2.0, 3.0, 2.0, 1.0];
+
+    let a_mat: Matrix<P> = Matrix::new(a_vec, 2, 3)?;
+    let b_mat: Matrix<P> = Matrix::new(b_vec, 2, 3)?;
+
+    let add_vec: Vec<P> = vec![3.0, 3.0, 5.0, 7.0, 7.0, 7.0];
+    let add_mat: Matrix<P> = Matrix::ref_add(&a_mat, &b_mat)?;
+    assert_eq!(add_mat.get_data(), add_vec, "Matrix-Matrix addition not as expected");
+
+    let neg_vec: Vec<P> = vec![-1.0, -2.0, -3.0, -4.0, -5.0, -6.0];
+    let neg_mat: Matrix<P> = Matrix::ref_neg(&a_mat);
+    assert_eq!(neg_mat.get_data(), neg_vec, "Matrix negation not as expected");
+
+    let sub_vec: Vec<P> = vec![-1.0, 1.0, 1.0, 1.0, 3.0, 5.0];
+    let sub_mat: Matrix<P> = Matrix::ref_sub(&a_mat, &b_mat)?;
+    assert_eq!(sub_mat.get_data(), sub_vec, "Matrix-Matrix subtraction not as expected");
+
+    let mul_vec: Vec<P> = vec![10.0, 10.0, 25.0, 28.0];
+    let mul_mat: Matrix<P> = Matrix::ref_mul(&a_mat, &b_mat.transpose())?;
+    assert_eq!(mul_mat.get_data(), mul_vec, "Matrix-Matrix multiplication data not as expected");
+    assert_eq!(mul_mat.get_rows(), 2, "Matrix-Matrix multiplication row dimension not as expected");
+    assert_eq!(mul_mat.get_cols(), 2, "Matrix-Matrix multiplication col dimension not as expected");
+
+    let elementwise_vec: Vec<P> = vec![2.0, 2.0, 6.0, 12.0, 10.0, 6.0];
+    let elementwise_mat: Matrix<P> = Matrix::ref_ewm(&a_mat, &b_mat)?;
+    assert_eq!(elementwise_mat.get_data(), elementwise_vec, "Elementwise multiplication data not as expected");
+    assert_eq!(elementwise_mat.get_rows(), 2, "Elementwise multiplication row dimension not as expected");
+    assert_eq!(elementwise_mat.get_cols(), 3, "Elementwise multiplication col dimension not as expected");
 
     Ok(())
 }
