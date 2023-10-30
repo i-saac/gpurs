@@ -65,6 +65,22 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
         return self.rows
     }
 
+    /// Return iterator object full of every row in the matrix.
+    /// 
+    /// ```
+    /// # use gpurs::{Result, linalg::Matrix};
+    /// # fn main() -> Result<()> {
+    /// let new_matrix: Matrix<f32> = Matrix::new(vec![0.0; 6], 3, 2)?;
+    /// for row in new_matrix.all_rows() {
+    ///     // Do something neat
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    /// 
+    /// This does not return a mutable reference,
+    /// so changing the row matrix spat out by the iterator
+    /// does not change the underlying matrix.
     pub fn all_rows(&self) -> RowMatIter<T> {
         return RowMatIter { row: 0, mat: self.clone() }
     }
@@ -84,6 +100,22 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
         return self.cols
     }
 
+    /// Return iterator object full of every column in the matrix.
+    /// 
+    /// ```
+    /// # use gpurs::{Result, linalg::Matrix};
+    /// # fn main() -> Result<()> {
+    /// let new_matrix: Matrix<f32> = Matrix::new(vec![0.0; 6], 3, 2)?;
+    /// for col in new_matrix.all_cols() {
+    ///     // Do something neat
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    /// 
+    /// This does not return a mutable reference,
+    /// so changing the column matrix spat out by the iterator
+    /// does not change the underlying matrix.
     pub fn all_cols(&self) -> ColMatIter<T> {
         return ColMatIter { col: 0, mat: self.clone() }
     }
@@ -1021,11 +1053,14 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> std::fmt::Display for Matrix<T
     }
 }
 
+/// Iterator object that returns a row of the input matrix.
+/// Constructed by matrix.all_rows(), cannot be manually constructed.
 pub struct RowMatIter<T: IsFloat + std::fmt::Debug + Copy + Clone> {
     row: usize,
     mat: Matrix<T>
 }
 
+/// Iterator implementation for RowMatIter
 impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Iterator for RowMatIter<T> {
     type Item = Matrix<T>;
 
@@ -1040,11 +1075,14 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Iterator for RowMatIter<T> {
     }
 }
 
+/// Iterator object that returns a column of the input matrix.
+/// Constructed by matrix.all_cols(), cannot be manually constructed.
 pub struct ColMatIter<T: IsFloat + std::fmt::Debug + Copy + Clone> {
     col: usize,
     mat: Matrix<T>
 }
 
+/// Iterator implementation for ColMatIter
 impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Iterator for ColMatIter<T> {
     type Item = Matrix<T>;
 

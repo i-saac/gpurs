@@ -6,6 +6,7 @@ use gpurs::linalg::{
     Matrix,
     MatrixUtilities,
     Axis,
+    BooleanMatrixOperations,
     ReferenceOperations
 };
 
@@ -22,7 +23,7 @@ fn linear_solve_test() -> Result<()> {
 }
 
 #[test]
-fn max_min_test() -> Result<()> {
+fn max_min_sum_test() -> Result<()> {
     let a_data: Vec<P> = vec![1.0, 2.0, 3.0, 4.0];
     let a_mat: Matrix<P> = Matrix::new(a_data, 2, 2)?;
 
@@ -43,6 +44,15 @@ fn max_min_test() -> Result<()> {
 
     let col_min: Matrix<P> = Matrix::axis_min(&a_mat, Axis::Col);
     assert_eq!(col_min.get_data(), &[1.0, 2.0], "Min values along col axis not as expected");
+
+    let sum_val: P = Matrix::sum(&a_mat);
+    assert_eq!(sum_val, 10.0, "Sum value not as expected");
+
+    let row_sum: Matrix<P> = Matrix::axis_sum(&a_mat, Axis::Row);
+    assert_eq!(row_sum.get_data(), &[3.0, 7.0], "Sum values along row axis not as expected");
+
+    let col_sum: Matrix<P> = Matrix::axis_sum(&a_mat, Axis::Col);
+    assert_eq!(col_sum.get_data(), &[4.0, 6.0], "Sum values along col axis not as expected");
 
     Ok(())
 }
@@ -67,6 +77,43 @@ fn concatenation_test() -> Result<()> {
     assert_eq!(col_concat.get_cols(), 6, "Col concatenation col dimension not as expected");
 
     println!("{}", col_concat);
+
+    Ok(())
+}
+
+#[test]
+fn bool_ops() -> Result<()> {
+    let a_vec: Vec<P> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+    let a_mat: Matrix<P> = Matrix::new(a_vec, 2, 3)?;
+
+    let equal_vec: Vec<bool> = Matrix::equal(&a_mat, 3.0);
+    assert_eq!(equal_vec, vec![false, false, true, false, false, false], "Equal to vector not as expected");
+
+    let less_than_vec: Vec<bool> = Matrix::less_than(&a_mat, 3.0);
+    assert_eq!(less_than_vec, vec![true, true, false, false, false, false], "Less than vector not as expected");
+    let less_equal_vec: Vec<bool> = Matrix::less_equal(&a_mat, 3.0);
+    assert_eq!(less_equal_vec, vec![true, true, true, false, false, false], "Less equal vector not as expected");
+
+    let greater_than_vec: Vec<bool> = Matrix::greater_than(&a_mat, 3.0);
+    assert_eq!(greater_than_vec, vec![false, false, false, true, true, true], "Greater than vector not as expected");
+    let greater_equal_vec: Vec<bool> = Matrix::greater_equal(&a_mat, 3.0);
+    assert_eq!(greater_equal_vec, vec![false, false, true, true, true, true], "Greater equal vector not as expected");
+
+    let b_vec: Vec<P> = vec![2.0, 2.0, 4.0, 3.0, 2.0, 1.0];
+    let b_mat: Matrix<P> = Matrix::new(b_vec, 2, 3)?;
+
+    let equal_mat_vec: Vec<bool> = Matrix::equal_mat(&a_mat, &b_mat)?;
+    assert_eq!(equal_mat_vec, vec![false, true, false, false, false, false], "Equal to mat vector not as expected");
+    
+    let less_than_mat_vec: Vec<bool> = Matrix::less_than_mat(&a_mat, &b_mat)?;
+    assert_eq!(less_than_mat_vec, vec![true, false, true, false, false, false], "Less than mat vector not as expected");
+    let less_equal_mat_vec: Vec<bool> = Matrix::less_equal_mat(&a_mat, &b_mat)?;
+    assert_eq!(less_equal_mat_vec, vec![true, true, true, false, false, false], "Less equal mat vector not as expected");
+
+    let greater_than_mat_vec: Vec<bool> = Matrix::greater_than_mat(&a_mat, &b_mat)?;
+    assert_eq!(greater_than_mat_vec, vec![false, false, false, true, true, true], "Greater than mat vector not as expected");
+    let greater_equal_mat_vec: Vec<bool> = Matrix::greater_equal_mat(&a_mat, &b_mat)?;
+    assert_eq!(greater_equal_mat_vec, vec![false, true, false, true, true, true], "Greater equal mat vector not as expected");
 
     Ok(())
 }
