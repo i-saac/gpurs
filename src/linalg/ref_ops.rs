@@ -20,6 +20,9 @@ pub trait ReferenceOperations<T: IsFloat + std::fmt::Debug + Copy + Clone> {
     /// Multiply two matrices elementwise. 
     /// Inputs are immutable references unlike the basic elementwise function.
     fn ref_ewm(left: &Matrix<T>, right: &Matrix<T>) -> Result<Matrix<T>>;
+    /// Divide two matrices elementwise.
+    /// Inputs are immutable references unlike the basic elementwise_divide function.
+    fn ref_ewd(left: &Matrix<T>, right: &Matrix<T>) -> Result<Matrix<T>>;
 }
 
 impl ReferenceOperations<f32> for Matrix<f32> {
@@ -106,6 +109,22 @@ impl ReferenceOperations<f32> for Matrix<f32> {
         let output_mat: Matrix<f32> = Matrix::new(output_data, left.get_rows(), left.get_cols()).unwrap();
         Ok(output_mat)
     }
+
+    /// Divide two matrices elementwise.
+    /// Inputs are immutable references unlike the basic elementwise_divide function.
+    fn ref_ewd(left: &Matrix<f32>, right: &Matrix<f32>) -> Result<Matrix<f32>> {
+        if (left.get_rows() != right.get_rows()) || (left.get_cols() != right.get_cols()) {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let n_elements: usize = left.get_rows() * left.get_cols();
+        let output_data: Vec<f32> = (0..n_elements).into_iter()
+            .map(|idx| left.lindex(idx) / right.lindex(idx))
+            .collect::<Vec<f32>>();
+
+        let output_mat: Matrix<f32> = Matrix::new(output_data, left.get_rows(), left.get_cols()).unwrap();
+        Ok(output_mat)
+    }
 }
 
 impl ReferenceOperations<f64> for Matrix<f64> {
@@ -187,6 +206,22 @@ impl ReferenceOperations<f64> for Matrix<f64> {
         let n_elements: usize = left.get_rows() * left.get_cols();
         let output_data: Vec<f64> = (0..n_elements).into_iter()
             .map(|idx| left.lindex(idx) * right.lindex(idx))
+            .collect::<Vec<f64>>();
+
+        let output_mat: Matrix<f64> = Matrix::new(output_data, left.get_rows(), left.get_cols()).unwrap();
+        Ok(output_mat)
+    }
+
+    /// Divide two matrices elementwise.
+    /// Inputs are immutable references unlike the basic elementwise_divide function.
+    fn ref_ewd(left: &Matrix<f64>, right: &Matrix<f64>) -> Result<Matrix<f64>> {
+        if (left.get_rows() != right.get_rows()) || (left.get_cols() != right.get_cols()) {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let n_elements: usize = left.get_rows() * left.get_cols();
+        let output_data: Vec<f64> = (0..n_elements).into_iter()
+            .map(|idx| left.lindex(idx) / right.lindex(idx))
             .collect::<Vec<f64>>();
 
         let output_mat: Matrix<f64> = Matrix::new(output_data, left.get_rows(), left.get_cols()).unwrap();

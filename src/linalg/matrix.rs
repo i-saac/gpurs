@@ -365,6 +365,35 @@ impl Matrix<f32> {
         Ok(Matrix { data: ewmult_data, rows: self.rows, cols: self.cols })
     }
 
+    /// Elementwise division between two matrices.
+    /// Matrices must be of the same size and shape.
+    /// 
+    /// ```
+    /// # use gpurs::{Result, linalg::Matrix};
+    /// # fn main() -> Result<()> {
+    /// let matrix_1: Matrix<f32> = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2)?;
+    /// let matrix_2: Matrix<f32> = Matrix::new(vec![2.0, 3.0, 4.0, 1.0], 2, 2)?;
+    /// let ew_division: Matrix<f32> = matrix_1.elementwise_divide(matrix_2)?;
+    /// 
+    /// assert_eq!(ew_division.get_data(), [0.5, 2.0/3.0, 0.75, 4.0]);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn elementwise_divide(self, rhs: Matrix<f32>) ->  Result<Matrix<f32>> {
+        if self.rows != rhs.rows || self.cols != rhs.cols {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let n_elements: usize = self.rows * self.cols;
+        let mut ewmult_data: Vec<f32> = Vec::with_capacity(n_elements);
+
+        for element in 0..n_elements {
+            ewmult_data.push(self.data[element] / rhs.data[element]);
+        }
+
+        Ok(Matrix { data: ewmult_data, rows: self.rows, cols: self.cols })
+    }
+
     /// Returns index of flattened array.
     /// Shorthand for matrix.get_data()[linear_index].
     pub fn lindex(&self, linear_index: usize) -> f32 {
@@ -443,6 +472,35 @@ impl Matrix<f64> {
 
         for element in 0..n_elements {
             ewmult_data.push(self.data[element] * rhs.data[element]);
+        }
+
+        Ok(Matrix { data: ewmult_data, rows: self.rows, cols: self.cols })
+    }
+
+    /// Elementwise division between two matrices.
+    /// Matrices must be of the same size and shape.
+    /// 
+    /// ```
+    /// # use gpurs::{Result, linalg::Matrix};
+    /// # fn main() -> Result<()> {
+    /// let matrix_1: Matrix<f64> = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2)?;
+    /// let matrix_2: Matrix<f64> = Matrix::new(vec![2.0, 3.0, 4.0, 1.0], 2, 2)?;
+    /// let ew_division: Matrix<f64> = matrix_1.elementwise_divide(matrix_2)?;
+    /// 
+    /// assert_eq!(ew_division.get_data(), [0.5, 2.0/3.0, 0.75, 4.0]);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn elementwise_divide(self, rhs: Matrix<f64>) ->  Result<Matrix<f64>> {
+        if self.rows != rhs.rows || self.cols != rhs.cols {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let n_elements: usize = self.rows * self.cols;
+        let mut ewmult_data: Vec<f64> = Vec::with_capacity(n_elements);
+
+        for element in 0..n_elements {
+            ewmult_data.push(self.data[element] / rhs.data[element]);
         }
 
         Ok(Matrix { data: ewmult_data, rows: self.rows, cols: self.cols })
@@ -1006,6 +1064,90 @@ impl ops::Mul<Matrix<f64>> for Matrix<f64> {
          }
 
         Ok(Matrix { data: output_data, rows: self.rows, cols: rhs.cols })
+    }
+}
+
+/// Divide matrix by float.
+/// 
+/// ```
+/// # use gpurs::linalg::Matrix;
+/// let matrix: Matrix<f32> = Matrix::<f32>::ones(2, 5);
+/// let new_matrix: Matrix<f32> = matrix / 2.0;
+/// 
+/// assert_eq!(new_matrix.get_data(), [0.5; 10]);
+/// ```
+impl ops::Div<f32> for Matrix<f32> {
+    type Output = Matrix<f32>;
+
+    fn div(self, rhs: f32) -> Matrix<f32> {
+        let output_data: Vec<f32> = self.data.iter()
+            .map(|val| val / rhs)
+            .collect::<Vec<f32>>();
+
+        Matrix { data: output_data, rows: self.rows, cols: self.cols }        
+    }
+}
+
+/// Divide matrix by float.
+/// 
+/// ```
+/// # use gpurs::linalg::Matrix;
+/// let matrix: Matrix<f64> = Matrix::<f64>::ones(2, 5);
+/// let new_matrix: Matrix<f64> = matrix / 2.0;
+/// 
+/// assert_eq!(new_matrix.get_data(), [0.5; 10]);
+/// ```
+impl ops::Div<f64> for Matrix<f64> {
+    type Output = Matrix<f64>;
+
+    fn div(self, rhs: f64) -> Matrix<f64> {
+        let output_data: Vec<f64> = self.data.iter()
+            .map(|val| val / rhs)
+            .collect::<Vec<f64>>();
+
+        Matrix { data: output_data, rows: self.rows, cols: self.cols }        
+    }
+}
+
+/// Divide float by matrix.
+/// 
+/// ```
+/// # use gpurs::linalg::Matrix;
+/// let matrix: Matrix<f32> = Matrix::<f32>::ones(2, 5);
+/// let new_matrix: Matrix<f32> = 2.0 / matrix;
+/// 
+/// assert_eq!(new_matrix.get_data(), [2.0; 10])
+/// ```
+impl ops::Div<Matrix<f32>> for f32 {
+    type Output = Matrix<f32>;
+
+    fn div(self, rhs: Matrix<f32>) -> Matrix<f32> {
+        let output_data: Vec<f32> = rhs.data.iter()
+            .map(|val| self / val)
+            .collect::<Vec<f32>>();
+
+        Matrix { data: output_data, rows: rhs.rows, cols: rhs.cols }
+    }
+}
+
+/// Divide float by matrix.
+/// 
+/// ```
+/// # use gpurs::linalg::Matrix;
+/// let matrix: Matrix<f64> = Matrix::<f64>::ones(2, 5);
+/// let new_matrix: Matrix<f64> = 2.0 / matrix;
+/// 
+/// assert_eq!(new_matrix.get_data(), [2.0; 10])
+/// ```
+impl ops::Div<Matrix<f64>> for f64 {
+    type Output = Matrix<f64>;
+
+    fn div(self, rhs: Matrix<f64>) -> Matrix<f64> {
+        let output_data: Vec<f64> = rhs.data.iter()
+            .map(|val| self / val)
+            .collect::<Vec<f64>>();
+
+        Matrix { data: output_data, rows: rhs.rows, cols: rhs.cols }
     }
 }
 
