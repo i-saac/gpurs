@@ -4,6 +4,7 @@ use crate::Jeeperr;
 use crate::linalg::Matrix;
 
 /// Axis enum for use in utility functions.
+#[derive(Debug, Clone, Copy)]
 pub enum Axis {
     /// Perform action along row dimension
     Row,
@@ -35,6 +36,11 @@ pub trait MatrixUtilities<T: IsFloat + std::fmt::Debug + Copy + Clone> {
     /// Find minimum value of matrix along an axis.
     /// This will find the minimum value of each row or column and output them as a matrix.
     fn axis_min(matrix: &Matrix<T>, axis: Axis) -> Matrix<T>;
+
+    /// Find sum of all elements in a matrix.
+    fn sum(matrix: &Matrix<T>) -> T;
+    /// Sum elements of a matrix along rows or columns, returning a column or row matrix.
+    fn axis_sum(matrix: &Matrix<T>, axis: Axis) -> Matrix<T>;
 
     /// Concatenate slice of matrices together along an axis.
     /// Think of this as "stacking" the matrices together either top to bottom (Axis::Row) or left to right (Axis::Col)
@@ -124,15 +130,8 @@ impl MatrixUtilities<f32> for Matrix<f32> {
             Axis::Row => {
                 let mut max_data: Vec<f32> = Vec::with_capacity(matrix.get_rows());
     
-                for row in 0..matrix.get_rows() {
-                    let start_idx: usize = row * matrix.get_cols();
-                    let end_idx: usize = (row + 1) * matrix.get_cols();
-    
-                    max_data.push(
-                        matrix.get_data()[start_idx..end_idx]
-                            .iter()
-                            .fold(f32::MIN, |left, &right| left.max(right))
-                    );
+                for row in matrix.all_rows() {
+                    max_data.push(Matrix::max(&row));
                 }
     
                 return Matrix::new(max_data, matrix.get_rows(), 1).unwrap()
@@ -140,13 +139,8 @@ impl MatrixUtilities<f32> for Matrix<f32> {
             Axis::Col => {
                 let mut max_data: Vec<f32> = Vec::with_capacity(matrix.get_cols());
     
-                for col in 0..matrix.get_cols() {
-                    max_data.push(
-                        matrix.col_vec(col)
-                            .unwrap()
-                            .iter()
-                            .fold(f32::MIN, |left, &right| left.max(right))
-                    );
+                for col in matrix.all_cols() {
+                    max_data.push(Matrix::max(&col));
                 }
     
                 return Matrix::new(max_data, 1, matrix.get_cols()).unwrap()
@@ -171,15 +165,8 @@ impl MatrixUtilities<f32> for Matrix<f32> {
             Axis::Row => {
                 let mut min_data: Vec<f32> = Vec::with_capacity(matrix.get_rows());
     
-                for row in 0..matrix.get_rows() {
-                    let start_idx: usize = row * matrix.get_cols();
-                    let end_idx: usize = (row + 1) * matrix.get_cols();
-    
-                    min_data.push(
-                        matrix.get_data()[start_idx..end_idx]
-                            .iter()
-                            .fold(f32::MAX, |left, &right| left.min(right))
-                    );
+                for row in matrix.all_rows() {
+                    min_data.push(Matrix::min(&row));
                 }
     
                 return Matrix::new(min_data, matrix.get_rows(), 1).unwrap()
@@ -187,16 +174,44 @@ impl MatrixUtilities<f32> for Matrix<f32> {
             Axis::Col => {
                 let mut min_data: Vec<f32> = Vec::with_capacity(matrix.get_cols());
     
-                for col in 0..matrix.get_cols() {
-                    min_data.push(
-                        matrix.col_vec(col)
-                            .unwrap()
-                            .iter()
-                            .fold(f32::MAX, |left, &right| left.min(right))
-                    );
+                for col in matrix.all_cols() {
+                    min_data.push(Matrix::min(&col));
                 }
     
                 return Matrix::new(min_data, 1, matrix.get_cols()).unwrap()
+            }
+        }
+    }
+
+    /// Find sum of all elements in a matrix.
+    fn sum(matrix: &Matrix<f32>) -> f32 {
+        let sum: f32 = matrix.get_data()
+            .iter()
+            .sum();
+    
+        return sum
+    }
+
+    /// Sum elements of a matrix along rows or columns, returning a column or row matrix.
+    fn axis_sum(matrix: &Matrix<f32>, axis: Axis) -> Matrix<f32> {
+        match axis {
+            Axis::Row => {
+                let mut sum_data: Vec<f32> = Vec::with_capacity(matrix.get_rows());
+
+                for row in matrix.all_rows() {
+                    sum_data.push(Matrix::sum(&row));
+                }
+
+                return Matrix::new(sum_data, matrix.get_rows(), 1).unwrap()
+            },
+            Axis::Col => {
+                let mut sum_data: Vec<f32> = Vec::with_capacity(matrix.get_cols());
+
+                for col in matrix.all_cols() {
+                    sum_data.push(Matrix::sum(&col));
+                }
+
+                return Matrix::new(sum_data, 1, matrix.get_cols()).unwrap()
             }
         }
     }
@@ -322,15 +337,8 @@ impl MatrixUtilities<f64> for Matrix<f64> {
             Axis::Row => {
                 let mut max_data: Vec<f64> = Vec::with_capacity(matrix.get_rows());
     
-                for row in 0..matrix.get_rows() {
-                    let start_idx: usize = row * matrix.get_cols();
-                    let end_idx: usize = (row + 1) * matrix.get_cols();
-    
-                    max_data.push(
-                        matrix.get_data()[start_idx..end_idx]
-                            .iter()
-                            .fold(f64::MIN, |left, &right| left.max(right))
-                    );
+                for row in matrix.all_rows() {
+                    max_data.push(Matrix::max(&row));
                 }
     
                 return Matrix::new(max_data, matrix.get_rows(), 1).unwrap()
@@ -338,13 +346,8 @@ impl MatrixUtilities<f64> for Matrix<f64> {
             Axis::Col => {
                 let mut max_data: Vec<f64> = Vec::with_capacity(matrix.get_cols());
     
-                for col in 0..matrix.get_cols() {
-                    max_data.push(
-                        matrix.col_vec(col)
-                            .unwrap()
-                            .iter()
-                            .fold(f64::MIN, |left, &right| left.max(right))
-                    );
+                for col in matrix.all_cols() {
+                    max_data.push(Matrix::max(&col));
                 }
     
                 return Matrix::new(max_data, 1, matrix.get_cols()).unwrap()
@@ -368,15 +371,8 @@ impl MatrixUtilities<f64> for Matrix<f64> {
             Axis::Row => {
                 let mut min_data: Vec<f64> = Vec::with_capacity(matrix.get_rows());
     
-                for row in 0..matrix.get_rows() {
-                    let start_idx: usize = row * matrix.get_cols();
-                    let end_idx: usize = (row + 1) * matrix.get_cols();
-    
-                    min_data.push(
-                        matrix.get_data()[start_idx..end_idx]
-                            .iter()
-                            .fold(f64::MAX, |left, &right| left.min(right))
-                    );
+                for row in matrix.all_rows() {
+                    min_data.push(Matrix::min(&row));
                 }
     
                 return Matrix::new(min_data, matrix.get_rows(), 1).unwrap()
@@ -384,16 +380,44 @@ impl MatrixUtilities<f64> for Matrix<f64> {
             Axis::Col => {
                 let mut min_data: Vec<f64> = Vec::with_capacity(matrix.get_cols());
     
-                for col in 0..matrix.get_cols() {
-                    min_data.push(
-                        matrix.col_vec(col)
-                            .unwrap()
-                            .iter()
-                            .fold(f64::MAX, |left, &right| left.min(right))
-                    );
+                for col in matrix.all_cols() {
+                    min_data.push(Matrix::min(&col));
                 }
     
                 return Matrix::new(min_data, 1, matrix.get_cols()).unwrap()
+            }
+        }
+    }
+
+    /// Find sum of all elements in a matrix.
+    fn sum(matrix: &Matrix<f64>) -> f64 {
+        let sum: f64 = matrix.get_data()
+            .iter()
+            .sum();
+    
+        return sum
+    }
+
+    /// Sum elements of a matrix along rows or columns, returning a column or row matrix.
+    fn axis_sum(matrix: &Matrix<f64>, axis: Axis) -> Matrix<f64> {
+        match axis {
+            Axis::Row => {
+                let mut sum_data: Vec<f64> = Vec::with_capacity(matrix.get_rows());
+
+                for row in matrix.all_rows() {
+                    sum_data.push(Matrix::sum(&row));
+                }
+
+                return Matrix::new(sum_data, matrix.get_rows(), 1).unwrap()
+            },
+            Axis::Col => {
+                let mut sum_data: Vec<f64> = Vec::with_capacity(matrix.get_cols());
+
+                for col in matrix.all_cols() {
+                    sum_data.push(Matrix::sum(&col));
+                }
+
+                return Matrix::new(sum_data, 1, matrix.get_cols()).unwrap()
             }
         }
     }

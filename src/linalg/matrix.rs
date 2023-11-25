@@ -65,6 +65,26 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
         return self.rows
     }
 
+    /// Return iterator object full of every row in the matrix.
+    /// 
+    /// ```
+    /// # use gpurs::{Result, linalg::Matrix};
+    /// # fn main() -> Result<()> {
+    /// let new_matrix: Matrix<f32> = Matrix::new(vec![0.0; 6], 3, 2)?;
+    /// for row in new_matrix.all_rows() {
+    ///     // Do something neat
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    /// 
+    /// This does not return a mutable reference,
+    /// so changing the row matrix spat out by the iterator
+    /// does not change the underlying matrix.
+    pub fn all_rows(&self) -> RowMatIter<T> {
+        return RowMatIter { row: 0, mat: self.clone() }
+    }
+
     /// Get number of cols in matrix.
     /// 
     /// ```
@@ -78,6 +98,26 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Matrix<T> {
     /// ```
     pub fn get_cols(&self) -> usize {
         return self.cols
+    }
+
+    /// Return iterator object full of every column in the matrix.
+    /// 
+    /// ```
+    /// # use gpurs::{Result, linalg::Matrix};
+    /// # fn main() -> Result<()> {
+    /// let new_matrix: Matrix<f32> = Matrix::new(vec![0.0; 6], 3, 2)?;
+    /// for col in new_matrix.all_cols() {
+    ///     // Do something neat
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    /// 
+    /// This does not return a mutable reference,
+    /// so changing the column matrix spat out by the iterator
+    /// does not change the underlying matrix.
+    pub fn all_cols(&self) -> ColMatIter<T> {
+        return ColMatIter { col: 0, mat: self.clone() }
     }
 
     /// Get matrix data in slice form.
@@ -324,6 +364,41 @@ impl Matrix<f32> {
 
         Ok(Matrix { data: ewmult_data, rows: self.rows, cols: self.cols })
     }
+
+    /// Elementwise division between two matrices.
+    /// Matrices must be of the same size and shape.
+    /// 
+    /// ```
+    /// # use gpurs::{Result, linalg::Matrix};
+    /// # fn main() -> Result<()> {
+    /// let matrix_1: Matrix<f32> = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2)?;
+    /// let matrix_2: Matrix<f32> = Matrix::new(vec![2.0, 3.0, 4.0, 1.0], 2, 2)?;
+    /// let ew_division: Matrix<f32> = matrix_1.elementwise_divide(matrix_2)?;
+    /// 
+    /// assert_eq!(ew_division.get_data(), [0.5, 2.0/3.0, 0.75, 4.0]);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn elementwise_divide(self, rhs: Matrix<f32>) ->  Result<Matrix<f32>> {
+        if self.rows != rhs.rows || self.cols != rhs.cols {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let n_elements: usize = self.rows * self.cols;
+        let mut ewmult_data: Vec<f32> = Vec::with_capacity(n_elements);
+
+        for element in 0..n_elements {
+            ewmult_data.push(self.data[element] / rhs.data[element]);
+        }
+
+        Ok(Matrix { data: ewmult_data, rows: self.rows, cols: self.cols })
+    }
+
+    /// Returns index of flattened array.
+    /// Shorthand for matrix.get_data()[linear_index].
+    pub fn lindex(&self, linear_index: usize) -> f32 {
+        self.data[linear_index]
+    }
 }
 
 impl Matrix<f64> {
@@ -400,6 +475,41 @@ impl Matrix<f64> {
         }
 
         Ok(Matrix { data: ewmult_data, rows: self.rows, cols: self.cols })
+    }
+
+    /// Elementwise division between two matrices.
+    /// Matrices must be of the same size and shape.
+    /// 
+    /// ```
+    /// # use gpurs::{Result, linalg::Matrix};
+    /// # fn main() -> Result<()> {
+    /// let matrix_1: Matrix<f64> = Matrix::new(vec![1.0, 2.0, 3.0, 4.0], 2, 2)?;
+    /// let matrix_2: Matrix<f64> = Matrix::new(vec![2.0, 3.0, 4.0, 1.0], 2, 2)?;
+    /// let ew_division: Matrix<f64> = matrix_1.elementwise_divide(matrix_2)?;
+    /// 
+    /// assert_eq!(ew_division.get_data(), [0.5, 2.0/3.0, 0.75, 4.0]);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn elementwise_divide(self, rhs: Matrix<f64>) ->  Result<Matrix<f64>> {
+        if self.rows != rhs.rows || self.cols != rhs.cols {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let n_elements: usize = self.rows * self.cols;
+        let mut ewmult_data: Vec<f64> = Vec::with_capacity(n_elements);
+
+        for element in 0..n_elements {
+            ewmult_data.push(self.data[element] / rhs.data[element]);
+        }
+
+        Ok(Matrix { data: ewmult_data, rows: self.rows, cols: self.cols })
+    }
+
+    /// Returns index of flattened array.
+    /// Shorthand for matrix.get_data()[linear_index].
+    pub fn lindex(&self, linear_index: usize) -> f64 {
+        self.data[linear_index]
     }
 }
 
@@ -957,6 +1067,90 @@ impl ops::Mul<Matrix<f64>> for Matrix<f64> {
     }
 }
 
+/// Divide matrix by float.
+/// 
+/// ```
+/// # use gpurs::linalg::Matrix;
+/// let matrix: Matrix<f32> = Matrix::<f32>::ones(2, 5);
+/// let new_matrix: Matrix<f32> = matrix / 2.0;
+/// 
+/// assert_eq!(new_matrix.get_data(), [0.5; 10]);
+/// ```
+impl ops::Div<f32> for Matrix<f32> {
+    type Output = Matrix<f32>;
+
+    fn div(self, rhs: f32) -> Matrix<f32> {
+        let output_data: Vec<f32> = self.data.iter()
+            .map(|val| val / rhs)
+            .collect::<Vec<f32>>();
+
+        Matrix { data: output_data, rows: self.rows, cols: self.cols }        
+    }
+}
+
+/// Divide matrix by float.
+/// 
+/// ```
+/// # use gpurs::linalg::Matrix;
+/// let matrix: Matrix<f64> = Matrix::<f64>::ones(2, 5);
+/// let new_matrix: Matrix<f64> = matrix / 2.0;
+/// 
+/// assert_eq!(new_matrix.get_data(), [0.5; 10]);
+/// ```
+impl ops::Div<f64> for Matrix<f64> {
+    type Output = Matrix<f64>;
+
+    fn div(self, rhs: f64) -> Matrix<f64> {
+        let output_data: Vec<f64> = self.data.iter()
+            .map(|val| val / rhs)
+            .collect::<Vec<f64>>();
+
+        Matrix { data: output_data, rows: self.rows, cols: self.cols }        
+    }
+}
+
+/// Divide float by matrix.
+/// 
+/// ```
+/// # use gpurs::linalg::Matrix;
+/// let matrix: Matrix<f32> = Matrix::<f32>::ones(2, 5);
+/// let new_matrix: Matrix<f32> = 2.0 / matrix;
+/// 
+/// assert_eq!(new_matrix.get_data(), [2.0; 10])
+/// ```
+impl ops::Div<Matrix<f32>> for f32 {
+    type Output = Matrix<f32>;
+
+    fn div(self, rhs: Matrix<f32>) -> Matrix<f32> {
+        let output_data: Vec<f32> = rhs.data.iter()
+            .map(|val| self / val)
+            .collect::<Vec<f32>>();
+
+        Matrix { data: output_data, rows: rhs.rows, cols: rhs.cols }
+    }
+}
+
+/// Divide float by matrix.
+/// 
+/// ```
+/// # use gpurs::linalg::Matrix;
+/// let matrix: Matrix<f64> = Matrix::<f64>::ones(2, 5);
+/// let new_matrix: Matrix<f64> = 2.0 / matrix;
+/// 
+/// assert_eq!(new_matrix.get_data(), [2.0; 10])
+/// ```
+impl ops::Div<Matrix<f64>> for f64 {
+    type Output = Matrix<f64>;
+
+    fn div(self, rhs: Matrix<f64>) -> Matrix<f64> {
+        let output_data: Vec<f64> = rhs.data.iter()
+            .map(|val| self / val)
+            .collect::<Vec<f64>>();
+
+        Matrix { data: output_data, rows: rhs.rows, cols: rhs.cols }
+    }
+}
+
 /// Print matrix in a readable way.
 ///
 /// Assume you have this matrix:
@@ -985,15 +1179,62 @@ impl ops::Mul<Matrix<f64>> for Matrix<f64> {
 /// ```
 impl<T: IsFloat + std::fmt::Debug + Copy + Clone> std::fmt::Display for Matrix<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        writeln!(f, "[{:?}", self.row_vec(0).unwrap())?;
-        for row_idx in 1..self.rows {
-            write!(f, " {:?}", self.row_vec(row_idx).unwrap())?;
-            if row_idx < self.rows - 1 {
-                write!(f, "\n")?;
+        write!(f, "[{:?}", self.row_vec(0).unwrap())?;
+        if self.rows > 1 {
+            writeln!(f, "")?;
+            for row_idx in 1..self.rows {
+                write!(f, " {:?}", self.row_vec(row_idx).unwrap())?;
+                if row_idx < self.rows - 1 {
+                    write!(f, "\n")?;
+                }
             }
         }
         writeln!(f, "]")?;
 
         Ok(())
+    }
+}
+
+/// Iterator object that returns a row of the input matrix.
+/// Constructed by matrix.all_rows(), cannot be manually constructed.
+pub struct RowMatIter<T: IsFloat + std::fmt::Debug + Copy + Clone> {
+    row: usize,
+    mat: Matrix<T>
+}
+
+/// Iterator implementation for RowMatIter
+impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Iterator for RowMatIter<T> {
+    type Item = Matrix<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row < self.mat.get_rows() {
+            self.row += 1;
+
+            return Some(self.mat.row_matrix(self.row - 1).unwrap());
+        }
+        
+        return None;
+    }
+}
+
+/// Iterator object that returns a column of the input matrix.
+/// Constructed by matrix.all_cols(), cannot be manually constructed.
+pub struct ColMatIter<T: IsFloat + std::fmt::Debug + Copy + Clone> {
+    col: usize,
+    mat: Matrix<T>
+}
+
+/// Iterator implementation for ColMatIter
+impl<T: IsFloat + std::fmt::Debug + Copy + Clone> Iterator for ColMatIter<T> {
+    type Item = Matrix<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.col < self.mat.get_cols() {
+            self.col += 1;
+
+            return Some(self.mat.col_matrix(self.col - 1).unwrap());
+        }
+        
+        return None;
     }
 }
