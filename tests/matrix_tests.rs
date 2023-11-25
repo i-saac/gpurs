@@ -74,3 +74,21 @@ fn arithmetic_test() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn iter_test() -> Result<()> {
+    let a_vec: Vec<P> = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
+    let a_mat: Matrix<P> = Matrix::new(a_vec, 2, 3)?;
+
+    for (idx, row) in a_mat.all_rows().enumerate() {
+        println!("{}", row);
+        assert_eq!(row.get_data(), a_mat.row_matrix(idx)?.get_data())
+    }
+
+    for (idx, col) in a_mat.all_cols().enumerate() {
+        println!("{}", col);
+        assert_eq!(col.get_data(), a_mat.col_matrix(idx)?.get_data())
+    }
+
+    Ok(())
+}
