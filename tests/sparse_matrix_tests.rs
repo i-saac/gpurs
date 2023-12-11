@@ -19,7 +19,7 @@ fn indexing_tests() -> Result<()> {
 }
 
 #[test]
-fn mult_test() -> Result<()> {
+fn mul_tests() -> Result<()> {
     let mat_data: Vec<P> = vec![1.0, 2.0, 3.0, 4.0];
     let d_mat: Matrix<P> = Matrix::new(mat_data, 2, 2)?;
     let s_mat: SparseMatrix<P> = SparseMatrix::<P>::from_dense(d_mat.clone());
