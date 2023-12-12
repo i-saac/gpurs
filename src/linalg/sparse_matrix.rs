@@ -11,14 +11,15 @@ use crate::linalg::Matrix;
 pub struct SparseMatrix<T: IsFloat + std::fmt::Debug + Copy + Clone> {
     data: Vec<HashMap<usize, T>>,
     rows: usize,
-    cols: usize
+    cols: usize,
+    n_elements: usize
 }
 
 impl<T: IsFloat + std::fmt::Debug + Copy + Clone> SparseMatrix<T> {
     pub fn empty(rows: usize, cols: usize) -> SparseMatrix<T> {
         let data: Vec<HashMap<usize, T>> = vec![HashMap::new(); rows];
 
-        return SparseMatrix { data, rows, cols };
+        return SparseMatrix { data, rows, cols, n_elements: 0 };
     }
 
     pub fn get_rows(&self) -> usize {
@@ -29,19 +30,50 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> SparseMatrix<T> {
         return self.cols;
     }
 
+    pub fn get_n_elements(&self) -> usize {
+        return self.n_elements;
+    }
+
     pub fn get_data(&self) -> &Vec<HashMap<usize, T>> {
         return &self.data;
     }
 
     pub fn reassign_at(&mut self, index: [usize; 2], value: T) -> Result<()> {
         if index[0] < self.rows && index[1] < self.cols {
+            if self.data[index[0]].contains_key(&index[1]) {
+                self.n_elements += 1;
+            }
             self.data[index[0]].insert(index[1], value);
 
-            return Ok(());
+            return Ok(())
         }
         else {
             return Err(Jeeperr::IndexError)
         }
+    }
+
+    pub fn to_csr(self) -> (Vec<usize>, Vec<usize>, Vec<T>) {
+        let mut row_starts: Vec<usize> = Vec::with_capacity(self.data.len());
+        let mut col_indices: Vec<usize> = Vec::with_capacity(self.n_elements);
+        let mut values: Vec<T> = Vec::with_capacity(self.n_elements);
+
+        let mut start_idx: usize = 0;
+        for row_map in self.data {
+            row_starts.push(start_idx);
+
+            let mut sorted_row_map: Vec<(usize, T)> = row_map.into_iter()
+                .collect::<Vec<(usize, T)>>();
+            sorted_row_map.sort_by(|(last_col_idx, _), (next_col_idx, _)| last_col_idx.cmp(next_col_idx));
+            for (col_idx, value) in sorted_row_map {
+                col_indices.push(col_idx);
+                values.push(value);
+            }
+
+            start_idx = col_indices.len();
+        }
+        row_starts.push(start_idx);
+
+        return (row_starts, col_indices, values)
     }
 }
 
@@ -50,6 +82,7 @@ impl SparseMatrix<f32> {
         let rows: usize = dense.get_rows();
         let cols: usize = dense.get_cols();
 
+        let mut n_elements: usize = 0;
         let mut data: Vec<HashMap<usize, f32>> = Vec::with_capacity(dense.get_rows());
         for row in dense.all_rows() {
             let mut row_map: HashMap<usize, f32> = HashMap::new();
@@ -58,12 +91,16 @@ impl SparseMatrix<f32> {
                 .into_iter()
                 .enumerate()
                 .filter(|(_, &item)| item != 0.0)
-                .for_each(|(col_idx, &item)| { row_map.insert(col_idx, item); });
+                .for_each(|(col_idx, &item)| { 
+                    row_map.insert(col_idx, item);
+                    n_elements += 1;
+                });
 
+            
             data.push(row_map);
         }
 
-        return SparseMatrix { data, rows, cols }
+        return SparseMatrix { data, rows, cols, n_elements }
     }
 
     pub fn increment_at(&mut self, index: [usize; 2], value: f32) -> Result<f32> {
@@ -75,6 +112,7 @@ impl SparseMatrix<f32> {
                 },
                 None => {
                     self.data[index[0]].insert(index[1], value);
+                    self.n_elements += 1;
                     return Ok(value)
                 }
             }
@@ -93,6 +131,7 @@ impl SparseMatrix<f32> {
                 },
                 None => {
                     self.data[index[0]].insert(index[1], value);
+                    self.n_elements += 1;
                     return Ok(value)
                 }
             }
@@ -108,6 +147,7 @@ impl SparseMatrix<f64> {
         let rows: usize = dense.get_rows();
         let cols: usize = dense.get_cols();
 
+        let mut n_elements: usize = 0;
         let mut data: Vec<HashMap<usize, f64>> = Vec::with_capacity(dense.get_rows());
         for row in dense.all_rows() {
             let mut row_map: HashMap<usize, f64> = HashMap::new();
@@ -116,12 +156,15 @@ impl SparseMatrix<f64> {
                 .into_iter()
                 .enumerate()
                 .filter(|(_, &item)| item != 0.0)
-                .for_each(|(col_idx, &item)| { row_map.insert(col_idx, item); });
+                .for_each(|(col_idx, &item)| { 
+                    row_map.insert(col_idx, item);
+                    n_elements += 1;
+                });
 
             data.push(row_map);
         }
 
-        return SparseMatrix { data, rows, cols }
+        return SparseMatrix { data, rows, cols, n_elements }
     }
 
     pub fn increment_at(&mut self, index: [usize; 2], value: f64) -> Result<f64> {
@@ -133,6 +176,7 @@ impl SparseMatrix<f64> {
                 },
                 None => {
                     self.data[index[0]].insert(index[1], value);
+                    self.n_elements += 1;
                     return Ok(value)
                 }
             }
@@ -151,6 +195,7 @@ impl SparseMatrix<f64> {
                 },
                 None => {
                     self.data[index[0]].insert(index[1], value);
+                    self.n_elements += 1;
                     return Ok(value)
                 }
             }

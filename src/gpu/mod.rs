@@ -16,6 +16,9 @@ mod memory;
 mod memory_calculator;
 mod quick_calculator;
 
+mod sparse_memory;
+mod sparse_calculator;
+
 pub use memory_calculator::MemoryCalculator;
 pub use memory_calculator::MemoryParameterFunction;
 pub use quick_calculator::QuickCalculator;
@@ -29,6 +32,9 @@ const PROGRAM_LIST_FLOAT: [&str; 1] = [
     "mat_mul"
 ];
 const PROGRAM_LIST_DOUBLE: [&str; 1] = [
+    "mat_mul"
+];
+const SPARSE_LIST_DOUBLE: [&str; 1] = [
     "mat_mul"
 ];
 
@@ -66,6 +72,27 @@ kernel void mat_mul (
     double interm = 0.0;
     for (int k = 0; k < K; k++) {
         interm += a[globalRow * K + k] * b[k * N + globalCol];
+    }
+
+    c[globalRow * N + globalCol] = interm;
+}
+"#;
+
+const SPARSE_SOURCE_DOUBLE: &str = r#"
+kernel void mat_mul (
+    global double* c,
+    const int N,
+    const global int* a_row,
+    const global int* a_col,
+    const global double* a_val,
+    const global double* b
+) {
+    const int globalRow = get_global_id(0);
+    const int globalCol = get_global_id(1);
+
+    double interm = 0.0;
+    for (int k = a_row[globalRow]; k < a_row[globalRow + 1]; k++) {
+        interm += a_val[k] * b[a_col[k] * N + globalCol];
     }
 
     c[globalRow * N + globalCol] = interm;
