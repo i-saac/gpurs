@@ -52,7 +52,7 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> SparseMatrix<T> {
         }
     }
 
-    pub fn to_csr(self) -> (Vec<usize>, Vec<usize>, Vec<T>) {
+    pub fn to_csr(self, sort_col_indices: bool) -> (Vec<usize>, Vec<usize>, Vec<T>) {
         let mut row_starts: Vec<usize> = Vec::with_capacity(self.data.len());
         let mut col_indices: Vec<usize> = Vec::with_capacity(self.n_elements);
         let mut values: Vec<T> = Vec::with_capacity(self.n_elements);
@@ -63,7 +63,9 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> SparseMatrix<T> {
 
             let mut sorted_row_map: Vec<(usize, T)> = row_map.into_iter()
                 .collect::<Vec<(usize, T)>>();
-            sorted_row_map.sort_by(|(last_col_idx, _), (next_col_idx, _)| last_col_idx.cmp(next_col_idx));
+            if sort_col_indices {
+                sorted_row_map.sort_by(|(last_col_idx, _), (next_col_idx, _)| last_col_idx.cmp(next_col_idx));
+            }
             for (col_idx, value) in sorted_row_map {
                 col_indices.push(col_idx);
                 values.push(value);
@@ -93,9 +95,9 @@ impl SparseMatrix<f32> {
                 .filter(|(_, &item)| item != 0.0)
                 .for_each(|(col_idx, &item)| { 
                     row_map.insert(col_idx, item);
-                    n_elements += 1;
                 });
 
+            n_elements += row_map.len();
             
             data.push(row_map);
         }
@@ -158,8 +160,9 @@ impl SparseMatrix<f64> {
                 .filter(|(_, &item)| item != 0.0)
                 .for_each(|(col_idx, &item)| { 
                     row_map.insert(col_idx, item);
-                    n_elements += 1;
                 });
+
+            n_elements += row_map.len();
 
             data.push(row_map);
         }

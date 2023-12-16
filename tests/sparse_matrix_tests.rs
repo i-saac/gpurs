@@ -28,7 +28,7 @@ fn csr_test() -> Result<()> {
     ];
     let mat: SparseMatrix<P> = SparseMatrix::<P>::from_dense(Matrix::new(mat_data, 4, 6)?);
 
-    println!("{:?}", mat.to_csr());
+    println!("{:?}", mat.to_csr(true));
 
     Ok(())
 }

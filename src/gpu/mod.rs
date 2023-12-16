@@ -24,6 +24,8 @@ pub use memory_calculator::MemoryParameterFunction;
 pub use quick_calculator::QuickCalculator;
 pub use quick_calculator::QuickParameterFunction;
 
+pub use sparse_calculator::SparseCalculator;
+
 // Default amount of memory slots for matrices in MemoryCalculator and QuickCalculator
 const INIT_MEMORY_CAPACITY: usize = 3;
 

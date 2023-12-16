@@ -48,7 +48,7 @@ pub struct SparseMemoryHandler<T: IsFloat + std::fmt::Debug + Copy + Clone> {
 impl<T: IsFloat + std::fmt::Debug + Copy + Clone> SparseMemoryHandler<T> {
     // Create buffer and store sparse matrix in buffer
     pub fn store_sparse_matrix(&mut self, matrix: SparseMatrix<T>) -> Result<usize> {
-        let (row_starts, col_indices, values) = matrix.to_csr();
+        let (row_starts, col_indices, values) = matrix.to_csr(false);
 
         // Create new empty write buffer
         let mut row_write_buffer: Buffer<i32> = unsafe {
@@ -724,13 +724,13 @@ impl SparseMemoryHandler<f64> {
 
         for (selected_row_write_buffer, selected_col_write_buffer, selected_val_write_buffer) in selected_sparse_write_buffers {
             kernel_mid_exec = unsafe {
-                kernel_mid_exec.set_arg(&selected_row_write_buffer)
+                kernel_mid_exec.set_arg(selected_row_write_buffer)
             };
             kernel_mid_exec = unsafe {
-                kernel_mid_exec.set_arg(&selected_col_write_buffer)
+                kernel_mid_exec.set_arg(selected_col_write_buffer)
             };
             kernel_mid_exec = unsafe {
-                kernel_mid_exec.set_arg(&selected_val_write_buffer)
+                kernel_mid_exec.set_arg(selected_val_write_buffer)
             };
         }
 
