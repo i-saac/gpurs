@@ -12,7 +12,7 @@ fn indexing_tests() -> Result<()> {
     let mut mat: SparseMatrix<P> = SparseMatrix::<P>::from_dense(Matrix::new(mat_data, 3, 4)?);
 
     assert_eq!(mat[[1, 2]], 7.0, "Index value not as expected");
-    mat.reassign_at([1, 2], -1.0)?;
+    mat.assign_at([1, 2], -1.0)?;
     assert_eq!(mat[[1, 2]], -1.0, "Reassigned value not as expected");
 
     Ok(())

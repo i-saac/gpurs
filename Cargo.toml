@@ -15,5 +15,4 @@ categories = ["science", "mathematics", "concurrency", "hardware-support", "memo
 opencl3 = {version="0.9.3", optional=true}
 
 [features]
-default = ["gpu_accel"]
 gpu_accel = ["dep:opencl3"]

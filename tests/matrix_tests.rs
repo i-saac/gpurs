@@ -67,7 +67,7 @@ fn arithmetic_test() -> Result<()> {
     assert_eq!(mul_mat.get_cols(), 2, "Matrix-Matrix multiplication col dimension not as expected");
 
     let elementwise_vec: Vec<P> = vec![2.0, 2.0, 6.0, 12.0, 10.0, 6.0];
-    let elementwise_mat: Matrix<P> = a_mat.elementwise(b_mat)?;
+    let elementwise_mat: Matrix<P> = a_mat.elementwise_multiply(b_mat)?;
     assert_eq!(elementwise_mat.get_data(), elementwise_vec, "Elementwise multiplication data not as expected");
     assert_eq!(elementwise_mat.get_rows(), 2, "Elementwise multiplication row dimension not as expected");
     assert_eq!(elementwise_mat.get_cols(), 3, "Elementwise multiplication col dimension not as expected");
@@ -88,6 +88,11 @@ fn iter_test() -> Result<()> {
     for (idx, col) in a_mat.all_cols().enumerate() {
         println!("{}", col);
         assert_eq!(col.get_data(), a_mat.col_matrix(idx)?.get_data())
+    }
+
+    for (idx, element) in a_mat.all_elements().enumerate() {
+        println!("{}", element);
+        assert_eq!(element, a_mat.lindex(idx))
     }
 
     Ok(())

@@ -10,7 +10,7 @@ Welcome to gpurs (pronounced "Jeepers!"), a general-purpose linear algebra toolk
 
 - **This crate is currently very much in development, and every feature and piece of syntax is subject to change. I'm trying to slow down with the major syntactic overhauls, but no promises.**
 
-- **This crate loads GPU accelerator modules and thus requires the OpenCL SDK by default. To opt out of this (for instance if you have no GPU) set the flag `default-features = false` when adding gpurs to your Cargo.toml file.**
+- **To load GPU accelerator modules requires the OpenCL SDK. To opt into GPU acceleration features set the flag `features = gpu-accel` when adding gpurs to your Cargo.toml file.**
 
     - For NVIDIA GPUs, the OpenCL SDK is available through the CUDA installer.
 

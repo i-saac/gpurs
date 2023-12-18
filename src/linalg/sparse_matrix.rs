@@ -38,9 +38,9 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> SparseMatrix<T> {
         return &self.data;
     }
 
-    pub fn reassign_at(&mut self, index: [usize; 2], value: T) -> Result<()> {
+    pub fn assign_at(&mut self, index: [usize; 2], value: T) -> Result<()> {
         if index[0] < self.rows && index[1] < self.cols {
-            if self.data[index[0]].contains_key(&index[1]) {
+            if !self.data[index[0]].contains_key(&index[1]) {
                 self.n_elements += 1;
             }
             self.data[index[0]].insert(index[1], value);
