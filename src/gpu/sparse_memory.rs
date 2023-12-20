@@ -142,21 +142,6 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> SparseMemoryHandler<T> {
         let output: usize = self.dense_write_buffers.len() - 1;
         Ok(output)
     }
-
-    pub fn new_kernel(&mut self, program_source: &str, kernel_name: &str) -> Result<usize> {
-        // Compile program from source
-        let program: Program = Program::create_and_build_from_source(
-            &self.context,
-            program_source,
-            ""
-        ).expect("Failed to build program");
-
-        let kernel: Kernel = Kernel::create(&program, kernel_name)?;
-
-        self.kernels.push(kernel);
-
-        Ok(self.kernels.len() - 1)
-    }
 }
 
 impl SparseMemoryHandler<f32> {

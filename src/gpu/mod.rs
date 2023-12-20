@@ -36,6 +36,10 @@ const PROGRAM_LIST_FLOAT: [&str; 1] = [
 const PROGRAM_LIST_DOUBLE: [&str; 1] = [
     "mat_mul"
 ];
+
+const SPARSE_LIST_FLOAT: [&str; 1] = [
+    "mat_mul"
+];
 const SPARSE_LIST_DOUBLE: [&str; 1] = [
     "mat_mul"
 ];
@@ -80,6 +84,26 @@ kernel void mat_mul (
 }
 "#;
 
+const SPARSE_SOURCE_FLOAT: &str = r#"
+kernel void mat_mul (
+    global double* c,
+    const int N,
+    const global int* a_row,
+    const global int* a_col,
+    const global float* a_val,
+    const global float* b
+) {
+    const int globalRow = get_global_id(0);
+    const int globalCol = get_global_id(1);
+
+    float interm = 0.0;
+    for (int k = a_row[globalRow]; k < a_row[globalRow + 1]; k++) {
+        interm += a_val[k] * b[a_col[k] * N + globalCol];
+    }
+
+    c[globalRow * N + globalCol] = interm;
+}
+"#;
 const SPARSE_SOURCE_DOUBLE: &str = r#"
 kernel void mat_mul (
     global double* c,

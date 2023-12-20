@@ -51,6 +51,54 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> SparseCalculator<T> {
     }
 }
 
+impl SparseCalculator<f32> {
+    /// Initializes Calculator struct.
+    pub fn init() -> Result<SparseCalculator<f32>> {
+        // Initialize vector of kernel names
+        let program_vec: Vec<&str> = super::SPARSE_LIST_FLOAT.to_vec();
+        
+        // Create memory handler using program source and kernel names
+        let memory_handler: SparseMemoryHandler<f32> = SparseMemoryHandler::<f32>::init(super::SPARSE_SOURCE_FLOAT, program_vec)?;
+
+        // Create empty memory vector
+        let sparse_mat_vector: Vec<(usize, usize)> = Vec::with_capacity(super::INIT_MEMORY_CAPACITY);
+        let dense_mat_vector: Vec<Matrix<f32>> = Vec::with_capacity(super::INIT_MEMORY_CAPACITY);
+
+        // Create and return new quick calculator
+        let output: SparseCalculator<f32> = SparseCalculator {
+            memory_handler: memory_handler,
+            sparse_matrix_data: sparse_mat_vector,
+            dense_matrices: dense_mat_vector
+        };
+        Ok(output)
+    }
+
+    /// Multiply previously stored Matrix and previously stored Matrix.
+    pub fn mat_mul(&mut self, left_sparse_idx: usize, right_dense_matrix: &Matrix<f32>) -> Result<Matrix<f32>> {
+        let (rows, cols) = self.sparse_matrix_data[left_sparse_idx];
+
+        if cols != right_dense_matrix.get_rows() {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let cols: usize = right_dense_matrix.get_cols();
+
+        let output: Matrix<f32> = self.memory_handler.execute_once_and_read(
+            0,
+            None,
+            Some(vec![cols as i32]),
+            vec![left_sparse_idx],
+            None,
+            Some(vec![&right_dense_matrix]),
+            rows,
+            cols,
+            vec![rows, cols]
+        )?;
+
+        Ok(output)
+    }
+}
+
 impl SparseCalculator<f64> {
     /// Initializes Calculator struct.
     pub fn init() -> Result<SparseCalculator<f64>> {

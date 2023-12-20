@@ -53,7 +53,7 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> SparseMatrix<T> {
     }
 
     pub fn to_csr(self, sort_col_indices: bool) -> (Vec<usize>, Vec<usize>, Vec<T>) {
-        let mut row_starts: Vec<usize> = Vec::with_capacity(self.data.len());
+        let mut row_starts: Vec<usize> = Vec::with_capacity(self.data.len() + 1);
         let mut col_indices: Vec<usize> = Vec::with_capacity(self.n_elements);
         let mut values: Vec<T> = Vec::with_capacity(self.n_elements);
 
@@ -258,6 +258,52 @@ impl ops::Mul<Matrix<f64>> for SparseMatrix<f64> {
     type Output = Result<Matrix<f64>>;
 
     fn mul(self, rhs: Matrix<f64>) -> Result<Matrix<f64>> {
+        if self.cols != rhs.get_rows() {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let new_n_elements: usize = self.rows * rhs.get_cols();
+        let mut output_data: Vec<f64> = vec![0.0; new_n_elements];
+
+        for (row_idx, row_map) in self.data.iter().enumerate() {
+            for col in 0..rhs.get_cols() {
+                output_data[row_idx * rhs.get_cols() + col] = row_map.iter()
+                    .map(|(&lhs_col, lhs_val)| lhs_val * rhs[[lhs_col, col]])
+                    .sum();
+            }
+        }
+
+        return Ok(Matrix::new(output_data, self.rows, rhs.get_cols())?)
+    }
+}
+
+impl ops::Mul<&Matrix<f32>> for &SparseMatrix<f32> {
+    type Output = Result<Matrix<f32>>;
+
+    fn mul(self, rhs: &Matrix<f32>) -> Result<Matrix<f32>> {
+        if self.cols != rhs.get_rows() {
+            return Err(Jeeperr::DimensionError)
+        }
+
+        let new_n_elements: usize = self.rows * rhs.get_cols();
+        let mut output_data: Vec<f32> = vec![0.0; new_n_elements];
+
+        for (row_idx, row_map) in self.data.iter().enumerate() {
+            for col in 0..rhs.get_cols() {
+                output_data[row_idx * rhs.get_cols() + col] = row_map.iter()
+                    .map(|(&lhs_col, lhs_val)| lhs_val * rhs[[lhs_col, col]])
+                    .sum();
+            }
+        }
+
+        return Ok(Matrix::new(output_data, self.rows, rhs.get_cols())?)
+    }
+}
+
+impl ops::Mul<&Matrix<f64>> for &SparseMatrix<f64> {
+    type Output = Result<Matrix<f64>>;
+
+    fn mul(self, rhs: &Matrix<f64>) -> Result<Matrix<f64>> {
         if self.cols != rhs.get_rows() {
             return Err(Jeeperr::DimensionError)
         }
