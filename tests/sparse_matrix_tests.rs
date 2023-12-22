@@ -19,7 +19,7 @@ fn indexing_tests() -> Result<()> {
 }
 
 #[test]
-fn csr_test() -> Result<()> {
+fn cs_test() -> Result<()> {
     let mat_data: Vec<P> = vec![
         10.0, 20.0, 0.0, 0.0, 0.0, 0.0,
         0.0, 30.0, 0.0, 40.0, 0.0, 0.0,
@@ -28,7 +28,9 @@ fn csr_test() -> Result<()> {
     ];
     let mat: SparseMatrix<P> = SparseMatrix::<P>::from_dense(Matrix::new(mat_data, 4, 6)?);
 
-    println!("{:?}", mat.to_csr(true));
+    println!("{:?}", mat.clone().to_csr(false));
+    println!("{:?}", mat.clone().to_csr(true));
+    println!("{:?}", mat.clone().to_csc());
 
     Ok(())
 }

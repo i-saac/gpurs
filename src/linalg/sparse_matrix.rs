@@ -77,6 +77,32 @@ impl<T: IsFloat + std::fmt::Debug + Copy + Clone> SparseMatrix<T> {
 
         return (row_starts, col_indices, values)
     }
+
+    pub fn to_csc(self) -> (Vec<usize>, Vec<usize>, Vec<T>) {
+        let mut col_starts: Vec<usize> = Vec::with_capacity(self.cols + 1);
+        let mut row_indices: Vec<usize> = Vec::with_capacity(self.n_elements);
+        let mut values: Vec<T> = Vec::with_capacity(self.n_elements);
+
+        let mut start_idx: usize = 0;
+        for col_idx in 0..self.cols { 
+            col_starts.push(start_idx);
+
+            let sorted_col_map: Vec<(usize, T)> = self.data.iter()
+                .enumerate()
+                .filter(|&(_, row_map)| row_map.contains_key(&col_idx))
+                .map(|(row_idx, row_map)| (row_idx, *row_map.get(&col_idx).unwrap()))
+                .collect::<Vec<(usize, T)>>();
+            for (row_idx, value) in sorted_col_map {
+                row_indices.push(row_idx);
+                values.push(value);
+            }
+
+            start_idx = row_indices.len();
+        }
+        col_starts.push(start_idx);
+
+        return (col_starts, row_indices, values)
+    }
 }
 
 impl SparseMatrix<f32> {
